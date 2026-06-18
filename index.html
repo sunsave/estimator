@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Sunsave PERT Estimator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --teal-1:#4ee5d3;--teal-2:#caf1ed;
+  --ink:#0a2e2a;--ink-2:rgba(10,46,42,0.72);--ink-3:rgba(10,46,42,0.55);
+  --ink-4:rgba(10,46,42,0.4);--ink-5:rgba(10,46,42,0.15);--ink-6:rgba(10,46,42,0.08);
+  --green:#15803d;--green-l:rgba(21,128,61,0.1);
+  --amber:#b45309;--amber-l:rgba(180,83,9,0.1);
+  --red:#b91c1c;--red-l:rgba(185,28,28,0.1);
+  --blue:#1e40af;--blue-l:rgba(30,64,175,0.08);
+  --brand:#0d9488;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:'Inter',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+body{background:linear-gradient(165deg,var(--teal-1) 0%,var(--teal-2) 100%);background-attachment:fixed;color:var(--ink);min-height:100vh;padding:28px 20px}
+.app{max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.card{background:rgba(255,255,255,0.95);border:1px solid var(--ink-6);border-radius:16px;box-shadow:0 4px 24px rgba(10,46,42,0.06)}
+
+/* Header */
+.header{padding:22px 26px}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:24px}
+.brand{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.brand-text .name{font-size:18px;font-weight:700;letter-spacing:-0.01em;line-height:1.1}
+.brand-text .tag{font-size:10px;font-weight:700;letter-spacing:0.14em;color:var(--ink-3);margin-top:2px}
+.field{background:rgba(10,46,42,0.04);border:1.5px solid transparent;border-radius:10px;padding:11px 14px;font:600 14px/1 'Inter',system-ui;color:var(--ink);outline:none;transition:all 0.15s;min-width:0}
+.field::placeholder{color:var(--ink-4);font-weight:500}
+.field:focus{background:white;border-color:var(--brand);box-shadow:0 0 0 3px rgba(13,148,136,0.12)}
+.task-input{flex:1}
+.unit-input{width:130px;flex-shrink:0;text-align:center}
+.intro{font-size:13px;color:var(--ink-2);line-height:1.55;margin-top:14px;padding-top:14px;border-top:1px solid var(--ink-6)}
+.intro b{color:var(--ink);font-weight:600}
+
+/* Inputs */
+.inputs{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.in-card{padding:18px 20px 20px;position:relative;overflow:hidden}
+.in-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.in-card.O::before{background:var(--green)}
+.in-card.M::before{background:var(--amber)}
+.in-card.P::before{background:var(--red)}
+.in-head{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.in-head .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.in-head.O{color:var(--green)}.in-head.O .dot{background:var(--green)}
+.in-head.M{color:var(--amber)}.in-head.M .dot{background:var(--amber)}
+.in-head.P{color:var(--red)}.in-head.P .dot{background:var(--red)}
+.in-value{display:flex;align-items:baseline;gap:7px;margin-bottom:16px}
+.in-value .num{font:700 36px/1 'Inter',system-ui;letter-spacing:-0.02em;background:transparent;border:none;outline:none;color:var(--ink);width:90px;padding:0;-moz-appearance:textfield}
+.in-value .num::-webkit-outer-spin-button,.in-value .num::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.in-value .num:focus{color:var(--brand)}
+.in-value .unit{font-size:13px;color:var(--ink-4);font-weight:500}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;background:var(--ink-6);outline:none;cursor:pointer;margin:0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;cursor:grab;border:2.5px solid white;box-shadow:0 2px 6px rgba(10,46,42,0.2)}
+input[type=range]:active::-webkit-slider-thumb{cursor:grabbing}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;cursor:grab;border:2.5px solid white;box-shadow:0 2px 6px rgba(10,46,42,0.2)}
+.sl.O::-webkit-slider-thumb{background:var(--green)}
+.sl.O::-moz-range-thumb{background:var(--green)}
+.sl.M::-webkit-slider-thumb{background:var(--amber)}
+.sl.M::-moz-range-thumb{background:var(--amber)}
+.sl.P::-webkit-slider-thumb{background:var(--red)}
+.sl.P::-moz-range-thumb{background:var(--red)}
+.in-hint{font-size:11.5px;color:var(--ink-3);margin-top:13px;line-height:1.4}
+
+/* Charts */
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ch-card{padding:16px 18px 14px}
+.ch-title{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.ch-leg{display:flex;gap:10px;font-size:10px;font-weight:700}
+.ch-leg span{display:inline-flex;align-items:center;gap:4px}
+.ch-leg .d{width:7px;height:7px;border-radius:50%}
+.ch-wrap{position:relative;height:215px}
+
+/* Stats + Footer */
+.bottom{padding:18px 22px}
+.bottom-head{display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px}
+.bottom-head .formula{font-family:'SF Mono',Monaco,'Cascadia Code',Consolas,monospace;font-size:10.5px;text-transform:none;letter-spacing:0;color:var(--ink-4);font-weight:500}
+.stats-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:14px}
+.stat{text-align:center;padding:11px 6px 12px;border-radius:10px;background:rgba(10,46,42,0.035);transition:transform 0.15s}
+.stat:hover{transform:translateY(-1px)}
+.stat.primary{background:var(--blue-l)}
+.stat.warn{background:var(--amber-l)}
+.stat.danger{background:var(--red-l)}
+.stat-l{font-size:10px;font-weight:700;letter-spacing:0.06em;color:var(--ink-3);margin-bottom:5px}
+.stat.primary .stat-l{color:var(--blue);opacity:0.85}
+.stat.warn .stat-l{color:var(--amber);opacity:0.85}
+.stat.danger .stat-l{color:var(--red);opacity:0.85}
+.stat-v{font:700 19px/1 'Inter',system-ui;letter-spacing:-0.01em;color:var(--ink);font-variant-numeric:tabular-nums}
+.stat-v .u{font-size:11px;font-weight:500;color:var(--ink-4);margin-left:1px}
+.stat.primary .stat-v{color:var(--blue)}
+.stat.warn .stat-v{color:var(--amber)}
+.stat.danger .stat-v{color:var(--red)}
+
+.bottom-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:14px;border-top:1px solid var(--ink-6)}
+.foot-text{font-size:11.5px;color:var(--ink-3);line-height:1.4}
+.btn{background:var(--ink);color:white;border:none;border-radius:10px;padding:11px 22px;font:700 13.5px/1 'Inter',system-ui;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:transform 0.1s,box-shadow 0.15s,background 0.15s;box-shadow:0 2px 10px rgba(10,46,42,0.18);flex-shrink:0;letter-spacing:-0.005em}
+.btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(10,46,42,0.25);background:#062018}
+.btn:active{transform:translateY(0)}
+
+/* Error */
+.error{padding:11px 16px;background:var(--red-l);border:1px solid rgba(185,28,28,0.25);border-radius:10px;color:var(--red);font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+
+/* Responsive */
+@media(max-width:760px){
+  body{padding:16px 12px}
+  .inputs{grid-template-columns:1fr;gap:10px}
+  .charts{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:repeat(4,1fr)}
+  .stat:nth-child(n+5){grid-column:span 1}
+  .bottom-foot{flex-direction:column;align-items:stretch}
+  .btn{justify-content:center}
+  .header-top{flex-direction:column;align-items:stretch;gap:10px}
+  .task-input,.unit-input{width:100%}
+  .in-card{padding:16px 18px 18px}
+  .in-value .num{font-size:32px;width:80px}
+}
+@media(max-width:480px){
+  .stats-grid{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="card header">
+    <div class="header-top">
+      <div class="brand">
+        <svg fill="none" height="36" viewBox="0 0 32 32" width="36" xmlns="http://www.w3.org/2000/svg"><clipPath id="ssC"><path d="m0 0h32v32h-32z"/></clipPath><g clip-path="url(#ssC)"><path d="m15.9853 14.6616c-2.6801 0-4.8608 2.1808-4.8608 4.8608 0 1.3033.5169 2.4879 1.3549 3.3617h7.0111c.838-.8738 1.3549-2.0584 1.3549-3.3617 0-2.68-2.1807-4.8608-4.8607-4.8608z" fill="#fbfb4b"/><g fill="#0a2e2a"><path d="m16.5427 11.804h-1.1161l-.2357-3.804h1.5875z"/><path d="m21.3736 13.9685-.8555-.7174 2.2649-3.0654 1.2167 1.0204z"/><path d="m23.6827 18.7315-.1939-1.0997 3.7052-.8925.2757 1.5639z"/><path d="m11.4519 13.2511-.8556.7174-2.62609-2.7624 1.21671-1.0204z"/><path d="m8.48094 17.6318-.1939 1.0997-3.78704-.4283.2757-1.5639z"/><path d="m25.012 24.0001-1.1119-2.4237h-2.3025c.2351-.6411.3635-1.3331.3635-2.0547 0-3.2957-2.6812-5.9769-5.9769-5.9769-3.2956 0-5.9768 2.6812-5.9768 5.9769 0 .7216.1284 1.4136.3635 2.0547h-2.30248l-1.11188 2.4237zm-9.0271-9.2434c2.6279 0 4.765 2.1377 4.765 4.765 0 1.2633-.4951 2.4128-1.3004 3.2665h-6.9299c-.8053-.8537-1.3004-2.0032-1.3004-3.2665 0-2.6273 2.1378-4.765 4.765-4.765z"/></g></g></svg>
+        <div class="brand-text">
+          <div class="name">Sunsave</div>
+          <div class="tag">PERT ESTIMATOR</div>
+        </div>
+      </div>
+      <input id="taskIn" class="field task-input" placeholder="Name this estimate (e.g. 'Onboarding flow redesign')…"/>
+      <input id="unitIn" class="field unit-input" value="eng-days" placeholder="eng-days" aria-label="Unit"/>
+    </div>
+    <p class="intro">
+      Three-point estimation gives you a probabilistic view of how long work will take. Provide your <b>optimistic</b>, <b>most likely</b>, and <b>pessimistic</b> estimates below — the charts visualise the range of likely outcomes, and the percentiles tell you what to commit to with confidence.
+    </p>
+  </header>
+
+  <section class="inputs">
+    <div class="card in-card O">
+      <div class="in-head O"><span class="dot"></span>Optimistic</div>
+      <div class="in-value">
+        <input id="oN" class="num" type="number" value="3" step="0.5" min="0"/>
+        <span class="unit">eng-days</span>
+      </div>
+      <input id="oS" class="sl O" type="range" min="0" max="28" step="0.5" value="3"/>
+      <div class="in-hint">Best-case scenario — everything goes right</div>
+    </div>
+    <div class="card in-card M">
+      <div class="in-head M"><span class="dot"></span>Most likely</div>
+      <div class="in-value">
+        <input id="mN" class="num" type="number" value="7" step="0.5" min="0"/>
+        <span class="unit">eng-days</span>
+      </div>
+      <input id="mS" class="sl M" type="range" min="0" max="28" step="0.5" value="7"/>
+      <div class="in-hint">Realistic estimate based on what you know</div>
+    </div>
+    <div class="card in-card P">
+      <div class="in-head P"><span class="dot"></span>Pessimistic</div>
+      <div class="in-value">
+        <input id="pN" class="num" type="number" value="14" step="0.5" min="0"/>
+        <span class="unit">eng-days</span>
+      </div>
+      <input id="pS" class="sl P" type="range" min="0" max="28" step="0.5" value="14"/>
+      <div class="in-hint">Worst case — assume things go sideways</div>
+    </div>
+  </section>
+
+  <div id="errMsg" class="error" style="display:none"></div>
+
+  <section class="charts">
+    <div class="card ch-card">
+      <div class="ch-title">
+        <span>Probability density</span>
+        <div class="ch-leg">
+          <span><span class="d" style="background:#15803d"></span>O</span>
+          <span><span class="d" style="background:#b45309"></span>M</span>
+          <span><span class="d" style="background:#b91c1c"></span>P</span>
+          <span><span class="d" style="background:#1e40af"></span>μ</span>
+        </div>
+      </div>
+      <div class="ch-wrap"><canvas id="pdfC" role="img" aria-label="Probability density function"></canvas></div>
+    </div>
+    <div class="card ch-card">
+      <div class="ch-title">
+        <span>Cumulative distribution</span>
+        <div class="ch-leg">
+          <span style="color:rgba(10,46,42,0.5)">P50</span>
+          <span style="color:#b45309">P80</span>
+          <span style="color:#b91c1c">P90</span>
+        </div>
+      </div>
+      <div class="ch-wrap"><canvas id="cdfC" role="img" aria-label="Cumulative distribution function"></canvas></div>
+    </div>
+  </section>
+
+  <section class="card bottom">
+    <div class="bottom-head">
+      <span>Statistics<span id="unitNote" style="font-weight:600;opacity:0.55"> · in eng-days</span></span>
+      <span class="formula">μ = (O + 4M + P) / 6 &nbsp;·&nbsp; σ = (P − O) / 6</span>
+    </div>
+    <div id="statsGrid" class="stats-grid"></div>
+    <div class="bottom-foot">
+      <div class="foot-text">Based on the normal approximation of the PERT Beta distribution. Use higher percentiles when committing to dates externally.</div>
+      <button id="dlBtn" class="btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Download PNG
+      </button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+function erf(x){const s=x<0?-1:1;x=Math.abs(x);const t=1/(1+.3275911*x);return s*(1-((((1.061405429*t-1.453152027)*t+1.421413741)*t-.284496736)*t+.254829592)*t*Math.exp(-x*x));}
+const ncdf=(x,mu,sg)=>.5*(1+erf((x-mu)/(sg*Math.SQRT2)));
+const npdf=(x,mu,sg)=>Math.exp(-.5*((x-mu)/sg)**2)/(sg*Math.sqrt(2*Math.PI));
+function qnorm(p){
+  const a=[-39.697,220.946,-275.929,138.358,-30.665,2.5066],b=[-54.476,161.586,-155.699,66.801,-13.281],
+        c=[-7.784e-3,-.3224,-2.4008,-2.5497,4.3747,2.9382],d=[7.785e-3,.3225,2.4451,3.7544];
+  if(p<.02425){const q=Math.sqrt(-2*Math.log(p));return(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+  if(p<=.97575){const q=p-.5,r=q*q;return(((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);}
+  const q=Math.sqrt(-2*Math.log(1-p));return-(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+}
+
+let O=3,M=7,P=14;
+
+function readParams(){
+  const q=new URLSearchParams(window.location.search);
+  if(q.has('o')||q.has('m')||q.has('p')||q.has('task')||q.has('unit'))return q;
+  return null;
+}
+
+function applyParams(){
+  const q=readParams();if(!q)return;
+  const num=(k,cur)=>{const v=parseFloat(q.get(k));return(q.has(k)&&!isNaN(v)&&v>=0)?v:cur;};
+  O=num('o',O);M=num('m',M);P=num('p',P);
+  ['oN','oS'].forEach(id=>document.getElementById(id).value=O);
+  ['mN','mS'].forEach(id=>document.getElementById(id).value=M);
+  ['pN','pS'].forEach(id=>document.getElementById(id).value=P);
+  if(q.has('unit'))document.getElementById('unitIn').value=q.get('unit');
+  if(q.has('task'))document.getElementById('taskIn').value=q.get('task');
+}
+
+const getUnit=()=>(document.getElementById('unitIn')?.value||'').trim();
+const cp=()=>{const mu=(O+4*M+P)/6,sg=(P-O)/6,q=p=>mu+qnorm(p)*sg;return{mu,sg,p50:mu,p75:q(.75),p80:q(.80),p90:q(.90),p95:q(.95)};};
+
+const COL_O='#15803d',COL_M='#b45309',COL_P='#b91c1c',COL_MU='#1e40af',COL_BRAND='#0d9488';
+const GRID='rgba(10,46,42,0.06)',TICK='rgba(10,46,42,0.5)',AXIS='rgba(10,46,42,0.55)';
+
+function syncBounds(){
+  const mx=Math.ceil(Math.max(P*1.6,20)/5)*5;
+  ['oS','mS','pS'].forEach(id=>document.getElementById(id).max=mx);
+}
+
+function pdfPlugin(){return{id:'pL',afterDraw(ch){
+  const ctx=ch.ctx,{chartArea:ca,scales:sc}=ch,s=cp();
+  [{x:O,c:COL_O,l:'O'},{x:M,c:COL_M,l:'M'},{x:P,c:COL_P,l:'P'},{x:s.mu,c:COL_MU,l:'μ'}].forEach(({x,c,l})=>{
+    const px=sc.x.getPixelForValue(x);if(px<ca.left-2||px>ca.right+2)return;
+    ctx.save();ctx.beginPath();ctx.moveTo(px,ca.top+4);ctx.lineTo(px,ca.bottom);
+    ctx.strokeStyle=c;ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=c;ctx.beginPath();ctx.arc(px,ca.top+4,2.5,0,2*Math.PI);ctx.fill();
+    ctx.font='700 11px Inter,system-ui';ctx.textAlign='center';ctx.fillText(l,px,ca.top-5);
+    ctx.restore();
+  });
+}}}
+
+function cdfPlugin(){return{id:'cL',afterDraw(ch){
+  const ctx=ch.ctx,{chartArea:ca,scales:sc}=ch,s=cp();
+  [{p:.5,xv:s.p50,c:'rgba(10,46,42,0.42)',l:'P50'},{p:.8,xv:s.p80,c:COL_M,l:'P80'},{p:.9,xv:s.p90,c:COL_P,l:'P90'}].forEach(({p,xv,c,l})=>{
+    const px=sc.x.getPixelForValue(xv),py=sc.y.getPixelForValue(p);
+    if(px<ca.left||px>ca.right)return;
+    ctx.save();ctx.strokeStyle=c;ctx.lineWidth=1.3;ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(ca.left,py);ctx.lineTo(px,py);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,ca.bottom);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle=c;ctx.beginPath();ctx.arc(px,py,3,0,2*Math.PI);ctx.fill();
+    ctx.font='700 9.5px Inter,system-ui';
+    ctx.textAlign='center';ctx.fillText(xv.toFixed(1),px,ca.bottom+13);
+    ctx.textAlign='right';ctx.fillText(l,ca.left-4,py+3.5);
+    ctx.restore();
+  });
+}}}
+
+let pCh=null,cCh=null;
+function buildCharts(){
+  const s=cp(),{mu,sg}=s;
+  const span=P-O,pad=Math.max(span*.22,sg);
+  const xMin=Math.max(0,Math.min(O-pad,mu-3.5*sg)),xMax=Math.max(P+pad,mu+3.5*sg);
+  const N=280,pts=[];
+  for(let i=0;i<=N;i++){const x=xMin+(xMax-xMin)*i/N;pts.push({x,pdf:npdf(x,mu,sg),cdf:ncdf(x,mu,sg)});}
+  const scX={type:'linear',min:xMin,max:xMax,grid:{color:GRID,drawTicks:false},border:{display:false},ticks:{color:TICK,font:{size:10,family:'Inter',weight:'500'},maxTicksLimit:7,padding:6},title:{display:true,text:getUnit()||'units',color:AXIS,font:{size:10.5,family:'Inter',weight:'600'},padding:{top:8}}};
+  const scY={grid:{color:GRID,drawTicks:false},border:{display:false},ticks:{color:TICK,font:{size:9.5,family:'Inter',weight:'500'},padding:6}};
+  const opts={responsive:true,maintainAspectRatio:false,animation:{duration:160,easing:'easeOutQuart'},plugins:{legend:{display:false},tooltip:{enabled:false}},layout:{padding:{top:18,right:8,left:4,bottom:0}}};
+
+  if(pCh)pCh.destroy();
+  pCh=new Chart(document.getElementById('pdfC'),{type:'line',data:{datasets:[{data:pts.map(p=>({x:p.x,y:p.pdf})),borderColor:COL_BRAND,backgroundColor:'rgba(13,148,136,0.13)',fill:true,pointRadius:0,tension:.35,borderWidth:2.2}]},options:{...opts,scales:{x:scX,y:{...scY,title:{display:true,text:'Density',color:AXIS,font:{size:10.5,family:'Inter',weight:'600'}}}}},plugins:[pdfPlugin()]});
+
+  if(cCh)cCh.destroy();
+  cCh=new Chart(document.getElementById('cdfC'),{type:'line',data:{datasets:[{data:pts.map(p=>({x:p.x,y:p.cdf})),borderColor:COL_MU,backgroundColor:'rgba(30,64,175,0.08)',fill:true,pointRadius:0,tension:.35,borderWidth:2.2}]},options:{...opts,scales:{x:scX,y:{...scY,min:0,max:1,title:{display:true,text:'Probability',color:AXIS,font:{size:10.5,family:'Inter',weight:'600'}},ticks:{...scY.ticks,callback:v=>`${(v*100).toFixed(0)}%`,maxTicksLimit:6}}}},plugins:[cdfPlugin()]});
+}
+
+function updateStats(){
+  const s=cp(),f=v=>v.toFixed(1);
+  const items=[
+    {l:'μ Expected',v:f(s.mu),cls:'primary'},
+    {l:'σ Std dev',v:f(s.sg),cls:''},
+    {l:'P50',v:f(s.p50),cls:''},
+    {l:'P75',v:f(s.p75),cls:''},
+    {l:'P80',v:f(s.p80),cls:'warn'},
+    {l:'P90',v:f(s.p90),cls:'danger'},
+    {l:'P95',v:f(s.p95),cls:'danger'}
+  ];
+  document.getElementById('statsGrid').innerHTML=items.map(i=>
+    `<div class="stat ${i.cls}"><div class="stat-l">${i.l}</div><div class="stat-v">${i.v}</div></div>`
+  ).join('');
+}
+
+function applyUnit(){
+  const u=getUnit();
+  document.querySelectorAll('.unit').forEach(el=>el.textContent=u);
+  document.getElementById('unitNote').textContent=u?` · in ${u}`:'';
+}
+
+function update(){
+  const err=document.getElementById('errMsg');
+  if(O>=M||M>=P){
+    err.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v4M12 16h0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> ${O>=M?'Optimistic must be less than Most likely':'Most likely must be less than Pessimistic'}`;
+    err.style.display='flex';return;
+  }
+  err.style.display='none';syncBounds();applyUnit();updateStats();buildCharts();
+}
+
+function wire(sId,nId,set){
+  const sl=document.getElementById(sId),nm=document.getElementById(nId);
+  sl.addEventListener('input',()=>{set(parseFloat(sl.value));nm.value=sl.value;applyParams();
+update();});
+  nm.addEventListener('input',()=>{const v=Math.max(0,parseFloat(nm.value)||0);set(v);if(v<=parseFloat(sl.max))sl.value=v;update();});
+}
+wire('oS','oN',v=>O=v);wire('mS','mN',v=>M=v);wire('pS','pN',v=>P=v);
+document.getElementById('unitIn').addEventListener('input',()=>{applyUnit();buildCharts();});
+
+const LOGO_S=`<svg fill="none" height="64" viewBox="0 0 32 32" width="64" xmlns="http://www.w3.org/2000/svg"><clipPath id="dd"><path d="m0 0h32v32h-32z"/></clipPath><g clip-path="url(#dd)"><path d="m15.9853 14.6616c-2.6801 0-4.8608 2.1808-4.8608 4.8608 0 1.3033.5169 2.4879 1.3549 3.3617h7.0111c.838-.8738 1.3549-2.0584 1.3549-3.3617 0-2.68-2.1807-4.8608-4.8607-4.8608z" fill="#fbfb4b"/><g fill="#0a2e2a"><path d="m16.5427 11.804h-1.1161l-.2357-3.804h1.5875z"/><path d="m21.3736 13.9685-.8555-.7174 2.2649-3.0654 1.2167 1.0204z"/><path d="m23.6827 18.7315-.1939-1.0997 3.7052-.8925.2757 1.5639z"/><path d="m11.4519 13.2511-.8556.7174-2.62609-2.7624 1.21671-1.0204z"/><path d="m8.48094 17.6318-.1939 1.0997-3.78704-.4283.2757-1.5639z"/><path d="m25.012 24.0001-1.1119-2.4237h-2.3025c.2351-.6411.3635-1.3331.3635-2.0547 0-3.2957-2.6812-5.9769-5.9769-5.9769-3.2956 0-5.9768 2.6812-5.9768 5.9769 0 .7216.1284 1.4136.3635 2.0547h-2.30248l-1.11188 2.4237zm-9.0271-9.2434c2.6279 0 4.765 2.1377 4.765 4.765 0 1.2633-.4951 2.4128-1.3004 3.2665h-6.9299c-.8053-.8537-1.3004-2.0032-1.3004-3.2665 0-2.6273 2.1378-4.765 4.765-4.765z"/></g></g></svg>`;
+const lImg=new Image();lImg.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(LOGO_S);
+
+function rrect(cx,x,y,w,h,r){cx.beginPath();cx.moveTo(x+r,y);cx.lineTo(x+w-r,y);cx.quadraticCurveTo(x+w,y,x+w,y+r);cx.lineTo(x+w,y+h-r);cx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);cx.lineTo(x+r,y+h);cx.quadraticCurveTo(x,y+h,x,y+h-r);cx.lineTo(x,y+r);cx.quadraticCurveTo(x,y,x+r,y);cx.closePath();}
+
+document.getElementById('dlBtn').addEventListener('click',()=>{
+  if(O>=M||M>=P)return;
+  const s=cp(),task=document.getElementById('taskIn').value.trim(),unit=getUnit()||'units';
+  const W=1280,H=820,M_=36;
+  const dc=document.createElement('canvas');dc.width=W;dc.height=H;
+  const cx=dc.getContext('2d');
+
+  // Background gradient
+  const bg=cx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#4ee5d3');bg.addColorStop(1,'#caf1ed');
+  cx.fillStyle=bg;cx.fillRect(0,0,W,H);
+
+  const FONT='Inter,-apple-system,system-ui,sans-serif';
+
+  // Header card
+  let y=M_;
+  cx.fillStyle='rgba(255,255,255,0.95)';rrect(cx,M_,y,W-2*M_,82,16);cx.fill();
+  cx.strokeStyle='rgba(10,46,42,0.08)';cx.lineWidth=1;cx.stroke();
+  cx.drawImage(lImg,M_+22,y+19,44,44);
+  cx.fillStyle='#0a2e2a';cx.font=`700 22px ${FONT}`;cx.textAlign='left';cx.fillText('Sunsave',M_+78,y+38);
+  cx.fillStyle='rgba(10,46,42,0.55)';cx.font=`700 11px ${FONT}`;cx.fillText('PERT ESTIMATOR',M_+78,y+58);
+  if(task){cx.fillStyle='#0a2e2a';cx.font=`600 17px ${FONT}`;cx.textAlign='center';cx.fillText(task,W/2,y+44);}
+  cx.fillStyle='rgba(10,46,42,0.45)';cx.font=`500 12.5px ${FONT}`;cx.textAlign='right';
+  cx.fillText(new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}),W-M_-22,y+38);
+  cx.fillText('Estimates in '+unit,W-M_-22,y+58);
+
+  // Input cards
+  y+=98;
+  const IH=120,IW=(W-2*M_-2*14)/3;
+  const inputs=[{l:'OPTIMISTIC',v:O,c:COL_O,h:'Best-case scenario'},{l:'MOST LIKELY',v:M,c:COL_M,h:'Realistic estimate'},{l:'PESSIMISTIC',v:P,c:COL_P,h:'Worst case'}];
+  inputs.forEach((it,i)=>{
+    const x=M_+i*(IW+14);
+    cx.fillStyle='rgba(255,255,255,0.95)';rrect(cx,x,y,IW,IH,16);cx.fill();
+    cx.strokeStyle='rgba(10,46,42,0.08)';cx.lineWidth=1;cx.stroke();
+    cx.fillStyle=it.c;rrect(cx,x,y,IW,4,2);cx.fill();
+    cx.fillStyle=it.c;cx.font=`700 11px ${FONT}`;cx.textAlign='left';
+    cx.beginPath();cx.arc(x+22,y+30,4,0,2*Math.PI);cx.fill();
+    cx.fillText(it.l,x+32,y+34);
+    cx.fillStyle='#0a2e2a';cx.font=`700 44px ${FONT}`;cx.fillText(it.v.toFixed(1),x+22,y+82);
+    cx.fillStyle='rgba(10,46,42,0.4)';cx.font=`500 13px ${FONT}`;
+    const numW=cx.measureText(it.v.toFixed(1)).width;
+    cx.font=`700 44px ${FONT}`;
+    const realW=cx.measureText(it.v.toFixed(1)).width;
+    cx.font=`500 13px ${FONT}`;cx.fillText(unit,x+30+realW,y+82);
+    cx.fillStyle='rgba(10,46,42,0.55)';cx.font=`500 12px ${FONT}`;cx.fillText(it.h,x+22,y+IH-16);
+  });
+
+  // Charts
+  y+=IH+14;
+  const CH=288,CW_=(W-2*M_-14)/2;
+  const drawChartCard=(x,title,canv)=>{
+    cx.fillStyle='rgba(255,255,255,0.95)';rrect(cx,x,y,CW_,CH,16);cx.fill();
+    cx.strokeStyle='rgba(10,46,42,0.08)';cx.lineWidth=1;cx.stroke();
+    cx.fillStyle='rgba(10,46,42,0.55)';cx.font=`700 11px ${FONT}`;cx.textAlign='left';cx.fillText(title,x+20,y+24);
+    if(canv?.canvas)cx.drawImage(canv.canvas,x+10,y+34,CW_-20,CH-44);
+  };
+  drawChartCard(M_,'PROBABILITY DENSITY',pCh);
+  drawChartCard(M_+CW_+14,'CUMULATIVE DISTRIBUTION',cCh);
+  // Legends on chart cards
+  cx.font=`700 10px ${FONT}`;cx.textAlign='left';
+  let lx=M_+CW_-160;
+  [['#15803d','O'],['#b45309','M'],['#b91c1c','P'],['#1e40af','μ']].forEach(([c,l])=>{
+    cx.fillStyle=c;cx.beginPath();cx.arc(lx,y+22,3.5,0,2*Math.PI);cx.fill();
+    cx.fillText(l,lx+7,y+25);lx+=32;
+  });
+  let lx2=M_+2*CW_+14-150;
+  [['rgba(10,46,42,0.45)','P50'],[COL_M,'P80'],[COL_P,'P90']].forEach(([c,l])=>{
+    cx.fillStyle=c;cx.fillText(l,lx2,y+25);lx2+=44;
+  });
+
+  // Stats card
+  y+=CH+14;
+  const SH=128;
+  cx.fillStyle='rgba(255,255,255,0.95)';rrect(cx,M_,y,W-2*M_,SH,16);cx.fill();
+  cx.strokeStyle='rgba(10,46,42,0.08)';cx.lineWidth=1;cx.stroke();
+  cx.fillStyle='rgba(10,46,42,0.55)';cx.font=`700 11px ${FONT}`;cx.textAlign='left';cx.fillText('STATISTICS · IN '+unit.toUpperCase(),M_+22,y+24);
+  cx.fillStyle='rgba(10,46,42,0.4)';cx.font=`500 11px monospace`;cx.textAlign='right';cx.fillText('μ = (O + 4M + P) / 6   ·   σ = (P − O) / 6',W-M_-22,y+24);
+
+  const stats=[
+    {l:'μ EXPECTED',v:s.mu,bg:'rgba(30,64,175,0.08)',fg:COL_MU},
+    {l:'σ STD DEV',v:s.sg,bg:'rgba(10,46,42,0.035)',fg:'#0a2e2a'},
+    {l:'P50',v:s.p50,bg:'rgba(10,46,42,0.035)',fg:'#0a2e2a'},
+    {l:'P75',v:s.p75,bg:'rgba(10,46,42,0.035)',fg:'#0a2e2a'},
+    {l:'P80',v:s.p80,bg:'rgba(180,83,9,0.1)',fg:COL_M},
+    {l:'P90',v:s.p90,bg:'rgba(185,28,28,0.1)',fg:COL_P},
+    {l:'P95',v:s.p95,bg:'rgba(185,28,28,0.1)',fg:COL_P}
+  ];
+  const sx=M_+22,sw=W-2*M_-44,each=(sw-6*10)/7;
+  stats.forEach((st,i)=>{
+    const x=sx+i*(each+10);
+    cx.fillStyle=st.bg;rrect(cx,x,y+44,each,68,10);cx.fill();
+    cx.fillStyle=st.fg==='#0a2e2a'?'rgba(10,46,42,0.55)':st.fg;
+    cx.globalAlpha=st.fg==='#0a2e2a'?1:0.85;
+    cx.font=`700 10px ${FONT}`;cx.textAlign='center';cx.fillText(st.l,x+each/2,y+62);
+    cx.globalAlpha=1;
+    cx.fillStyle=st.fg;cx.font=`700 24px ${FONT}`;cx.fillText(st.v.toFixed(1),x+each/2,y+95);
+  });
+
+  // Footer
+  y+=SH+18;
+  cx.fillStyle='rgba(10,46,42,0.45)';cx.font=`500 11.5px ${FONT}`;cx.textAlign='center';
+  cx.fillText('Generated with Sunsave PERT Estimator  ·  Normal approximation of the PERT Beta distribution',W/2,y+8);
+
+  const a=document.createElement('a');
+  a.href=dc.toDataURL('image/png');
+  a.download=`pert-estimate${task?'-'+task.replace(/\s+/g,'-').toLowerCase():''}.png`;
+  a.click();
+});
+
+update();
+</script>
+</body>
+</html>
