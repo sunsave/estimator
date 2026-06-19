@@ -143,6 +143,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;cur
     <p class="intro">
       Three-point estimation gives you a probabilistic view of how long work will take. Provide your <b>optimistic</b>, <b>most likely</b>, and <b>pessimistic</b> estimates below — the charts visualise the range of likely outcomes, and the percentiles tell you what to commit to with confidence.
     </p>
+    <div id="dateBar" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--ink-6);font-size:12px;color:var(--ink-3)"></div>
   </header>
 
   <section class="inputs">
@@ -176,6 +177,21 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;cur
   </section>
 
   <div id="errMsg" class="error" style="display:none"></div>
+
+  <section id="calChartWrap" style="display:none">
+    <div class="card ch-card">
+      <div class="ch-title">
+        <span>Timeline · Probability of completion by date</span>
+        <div class="ch-leg">
+          <span style="color:rgba(10,46,42,0.5)">P50</span>
+          <span style="color:#b45309">P80</span>
+          <span style="color:#b91c1c">P90 / End</span>
+          <span style="color:#7c3aed">Today</span>
+        </div>
+      </div>
+      <div class="ch-wrap"><canvas id="calC" role="img" aria-label="Timeline cumulative distribution"></canvas></div>
+    </div>
+  </section>
 
   <section class="charts">
     <div class="card ch-card">
@@ -233,14 +249,16 @@ function qnorm(p){
 }
 
 let O=3,M=7,P=14;
+let startDate=null,endDate=null;
 
 function readParams(){
   const q=new URLSearchParams(window.location.search);
-  if(q.has('o')||q.has('m')||q.has('p')||q.has('task')||q.has('unit'))return q;
+  if(q.has('o')||q.has('m')||q.has('p')||q.has('task')||q.has('unit')||q.has('start')||q.has('end'))return q;
   return null;
 }
 
 function applyParams(){
+  startDate=null;endDate=null;
   const q=readParams();if(!q)return;
   const num=(k,cur)=>{const v=parseFloat(q.get(k));return(q.has(k)&&!isNaN(v)&&v>=0)?v:cur;};
   O=num('o',O);M=num('m',M);P=num('p',P);
@@ -249,12 +267,14 @@ function applyParams(){
   ['pN','pS'].forEach(id=>document.getElementById(id).value=P);
   if(q.has('unit'))document.getElementById('unitIn').value=q.get('unit');
   if(q.has('task'))document.getElementById('taskIn').value=q.get('task');
+  if(q.has('start')){const d=new Date(q.get('start'));if(!isNaN(d.getTime())){d.setHours(0,0,0,0);startDate=d;}}
+  if(q.has('end')){const d=new Date(q.get('end'));if(!isNaN(d.getTime())){d.setHours(0,0,0,0);endDate=d;}}
 }
 
 const getUnit=()=>(document.getElementById('unitIn')?.value||'').trim();
 const cp=()=>{const mu=(O+4*M+P)/6,sg=(P-O)/6,q=p=>mu+qnorm(p)*sg;return{mu,sg,p50:mu,p75:q(.75),p80:q(.80),p90:q(.90),p95:q(.95)};};
 
-const COL_O='#15803d',COL_M='#b45309',COL_P='#b91c1c',COL_MU='#1e40af',COL_BRAND='#0d9488';
+const COL_O='#15803d',COL_M='#b45309',COL_P='#b91c1c',COL_MU='#1e40af',COL_BRAND='#0d9488',COL_TODAY='#7c3aed';
 const GRID='rgba(10,46,42,0.06)',TICK='rgba(10,46,42,0.5)',AXIS='rgba(10,46,42,0.55)';
 
 function syncBounds(){
@@ -291,7 +311,54 @@ function cdfPlugin(){return{id:'cL',afterDraw(ch){
   });
 }}}
 
-let pCh=null,cCh=null;
+function calPlugin(){return{id:'calP',afterDraw(ch){
+  if(!startDate||!endDate)return;
+  const ctx=ch.ctx,{chartArea:ca,scales:sc}=ch,s=cp();
+  const toDate=v=>{const d=new Date(startDate.getTime()+v*864e5);return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});};
+  const totalDays=(endDate.getTime()-startDate.getTime())/864e5;
+  // P50/P80/P90 crosshairs (dates on x-axis)
+  [{p:.5,xv:s.p50,c:'rgba(10,46,42,0.42)',l:'P50'},{p:.8,xv:s.p80,c:COL_M,l:'P80'},{p:.9,xv:s.p90,c:COL_P,l:'P90'}].forEach(({p,xv,c,l})=>{
+    const px=sc.x.getPixelForValue(xv),py=sc.y.getPixelForValue(p);
+    if(px<ca.left||px>ca.right)return;
+    ctx.save();ctx.strokeStyle=c;ctx.lineWidth=1.3;ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(ca.left,py);ctx.lineTo(px,py);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,ca.bottom);ctx.stroke();
+    ctx.setLineDash([]);ctx.fillStyle=c;ctx.beginPath();ctx.arc(px,py,3,0,2*Math.PI);ctx.fill();
+    ctx.font='700 9.5px Inter,system-ui';
+    ctx.textAlign='center';ctx.fillText(toDate(xv),px,ca.bottom+13);
+    ctx.textAlign='right';ctx.fillText(l,ca.left-4,py+3.5);
+    ctx.restore();
+  });
+  // End date line
+  const pxEnd=sc.x.getPixelForValue(totalDays);
+  if(pxEnd>=ca.left&&pxEnd<=ca.right){
+    ctx.save();ctx.strokeStyle=COL_P;ctx.lineWidth=1.5;ctx.setLineDash([5,3]);
+    ctx.beginPath();ctx.moveTo(pxEnd,ca.top+18);ctx.lineTo(pxEnd,ca.bottom);ctx.stroke();
+    ctx.setLineDash([]);ctx.fillStyle=COL_P;
+    ctx.font='700 11px Inter,system-ui';ctx.textAlign='center';ctx.fillText('End',pxEnd,ca.top-5);
+    ctx.restore();
+  }
+  // Today line
+  const el=getElapsed();
+  if(el!==null&&el>0){
+    const px=sc.x.getPixelForValue(el);
+    if(px>=ca.left&&px<=ca.right){
+      const prob=ncdf(el,s.mu,s.sg);
+      const py=sc.y.getPixelForValue(prob);
+      ctx.save();ctx.strokeStyle=COL_TODAY;ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(px,ca.top);ctx.lineTo(px,ca.bottom);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(ca.left,py);ctx.lineTo(px,py);ctx.stroke();
+      ctx.fillStyle=COL_TODAY;ctx.beginPath();ctx.arc(px,py,3.5,0,2*Math.PI);ctx.fill();
+      ctx.font='700 9.5px Inter,system-ui';
+      ctx.textAlign='center';ctx.fillText(toDate(el),px,ca.bottom+26);
+      ctx.textAlign='right';ctx.fillText(`${(prob*100).toFixed(0)}%`,ca.left-4,py+3.5);
+      ctx.font='700 11px Inter,system-ui';ctx.textAlign='center';ctx.fillText('Today',px,ca.top-5);
+      ctx.restore();
+    }
+  }
+}}}
+
+let pCh=null,cCh=null,calCh=null;
 function buildCharts(){
   const s=cp(),{mu,sg}=s;
   const span=P-O,pad=Math.max(span*.22,sg);
@@ -307,6 +374,29 @@ function buildCharts(){
 
   if(cCh)cCh.destroy();
   cCh=new Chart(document.getElementById('cdfC'),{type:'line',data:{datasets:[{data:pts.map(p=>({x:p.x,y:p.cdf})),borderColor:COL_MU,backgroundColor:'rgba(30,64,175,0.08)',fill:true,pointRadius:0,tension:.35,borderWidth:2.2}]},options:{...opts,scales:{x:scX,y:{...scY,min:0,max:1,title:{display:true,text:'Probability',color:AXIS,font:{size:10.5,family:'Inter',weight:'600'}},ticks:{...scY.ticks,callback:v=>`${(v*100).toFixed(0)}%`,maxTicksLimit:6}}}},plugins:[cdfPlugin()]});
+}
+
+function buildCalChart(){
+  const wrap=document.getElementById('calChartWrap');
+  if(!startDate||!endDate){wrap.style.display='none';if(calCh){calCh.destroy();calCh=null;}return;}
+  wrap.style.display='';
+  const s=cp(),{mu,sg}=s;
+  const totalDays=(endDate.getTime()-startDate.getTime())/864e5;
+  const xMax=Math.max(totalDays*1.08,mu+3*sg);
+  const N=280,pts=[];
+  for(let i=0;i<=N;i++){const x=xMax*i/N;pts.push({x,y:ncdf(x,mu,sg)});}
+  const toDate=v=>{const d=new Date(startDate.getTime()+v*864e5);return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});};
+  const scX={type:'linear',min:0,max:xMax,grid:{color:GRID,drawTicks:false},border:{display:false},
+    ticks:{color:TICK,font:{size:10,family:'Inter',weight:'500'},maxTicksLimit:7,padding:6,callback:toDate}};
+  const scY={grid:{color:GRID,drawTicks:false},border:{display:false},min:0,max:1,
+    ticks:{color:TICK,font:{size:9.5,family:'Inter',weight:'500'},padding:6,callback:v=>`${(v*100).toFixed(0)}%`,maxTicksLimit:6},
+    title:{display:true,text:'Probability',color:AXIS,font:{size:10.5,family:'Inter',weight:'600'}}};
+  const opts={responsive:true,maintainAspectRatio:false,animation:{duration:160,easing:'easeOutQuart'},
+    plugins:{legend:{display:false},tooltip:{enabled:false}},layout:{padding:{top:18,right:8,left:4,bottom:0}}};
+  if(calCh)calCh.destroy();
+  calCh=new Chart(document.getElementById('calC'),{type:'line',
+    data:{datasets:[{data:pts,borderColor:COL_MU,backgroundColor:'rgba(30,64,175,0.08)',fill:true,pointRadius:0,tension:.35,borderWidth:2.2}]},
+    options:{...opts,scales:{x:scX,y:scY}},plugins:[calPlugin()]});
 }
 
 function updateStats(){
@@ -331,13 +421,39 @@ function applyUnit(){
   document.getElementById('unitNote').textContent=u?` · in ${u}`:'';
 }
 
+const getElapsed=()=>{
+  if(!startDate)return null;
+  const t=new Date();t.setHours(0,0,0,0);
+  return(t.getTime()-startDate.getTime())/864e5;
+};
+
+function updateDateBar(){
+  const bar=document.getElementById('dateBar');
+  const el=getElapsed();
+  if(!startDate){bar.style.display='none';return;}
+  const fmt=d=>d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  const parts=[`📅 ${fmt(startDate)}${endDate?' → '+fmt(endDate):''}`];
+  if(el<0){parts.push(`Starts in ${Math.abs(el).toFixed(0)} days`);}
+  else{
+    const d=el%1<.1?`${Math.round(el)}`:el.toFixed(1);
+    if(endDate){
+      const tot=(endDate.getTime()-startDate.getTime())/864e5;
+      const rem=Math.max(0,tot-el);
+      parts.push(`Day ${d} of ${Math.round(tot)}`);
+      parts.push(`${rem.toFixed(1)} days remaining`);
+    }else{parts.push(`Day ${d}`);}
+  }
+  bar.innerHTML=parts.map((p,i)=>i?`<span style="opacity:.4">·</span><span>${p}</span>`:`<span>${p}</span>`).join('');
+  bar.style.display='flex';
+}
+
 function update(){
   const err=document.getElementById('errMsg');
   if(O>=M||M>=P){
     err.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v4M12 16h0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> ${O>=M?'Optimistic must be less than Most likely':'Most likely must be less than Pessimistic'}`;
     err.style.display='flex';return;
   }
-  err.style.display='none';syncBounds();applyUnit();updateStats();buildCharts();
+  err.style.display='none';syncBounds();applyUnit();updateStats();updateDateBar();buildCharts();buildCalChart();
 }
 
 function wire(sId,nId,set){
@@ -376,7 +492,12 @@ document.getElementById('dlBtn').addEventListener('click',()=>{
   cx.fillStyle='rgba(10,46,42,0.55)';cx.font=`700 11px ${FONT}`;cx.fillText('PERT ESTIMATOR',M_+78,y+58);
   if(task){cx.fillStyle='#0a2e2a';cx.font=`600 17px ${FONT}`;cx.textAlign='center';cx.fillText(task,W/2,y+44);}
   cx.fillStyle='rgba(10,46,42,0.45)';cx.font=`500 12.5px ${FONT}`;cx.textAlign='right';
-  cx.fillText(new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}),W-M_-22,y+38);
+  const fmtD=d=>d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  if(startDate){
+    cx.fillText(fmtD(startDate)+(endDate?' → '+fmtD(endDate):''),W-M_-22,y+38);
+  }else{
+    cx.fillText(new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}),W-M_-22,y+38);
+  }
   cx.fillText('Estimates in '+unit,W-M_-22,y+58);
 
   // Input cards
@@ -418,10 +539,16 @@ document.getElementById('dlBtn').addEventListener('click',()=>{
     cx.fillStyle=c;cx.beginPath();cx.arc(lx,y+22,3.5,0,2*Math.PI);cx.fill();
     cx.fillText(l,lx+7,y+25);lx+=32;
   });
+  const elExp=getElapsed();
+  if(startDate&&elExp!==null&&elExp>0){
+    cx.fillStyle=COL_TODAY;cx.beginPath();cx.arc(lx,y+22,3.5,0,2*Math.PI);cx.fill();
+    cx.fillText('Now',lx+7,y+25);
+  }
   let lx2=M_+2*CW_+14-150;
   [['rgba(10,46,42,0.45)','P50'],[COL_M,'P80'],[COL_P,'P90']].forEach(([c,l])=>{
     cx.fillStyle=c;cx.fillText(l,lx2,y+25);lx2+=44;
   });
+  if(startDate&&elExp!==null&&elExp>0){cx.fillStyle=COL_TODAY;cx.fillText('Now',lx2,y+25);}
 
   // Stats card
   y+=CH+14;
@@ -462,6 +589,7 @@ document.getElementById('dlBtn').addEventListener('click',()=>{
   a.click();
 });
 
+applyParams();
 update();
 </script>
 </body>

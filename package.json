@@ -1,0 +1,6 @@
+{
+  "name": "estimator",
+  "scripts": {
+    "start": "bunx serve ."
+  }
+}
