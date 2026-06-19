@@ -224,6 +224,15 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;cur
       <span>Statistics<span id="unitNote" style="font-weight:600;opacity:0.55"> · in eng-days</span></span>
       <span class="formula">μ = (O + 4M + P) / 6 &nbsp;·&nbsp; σ = (P − O) / 6</span>
     </div>
+    <div id="progressSection" style="display:none;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;color:var(--ink-3)">PROGRESS</span>
+        <span id="progressText" style="font-size:11.5px;font-weight:600;color:var(--ink-2)"></span>
+      </div>
+      <div style="height:8px;background:var(--ink-6);border-radius:4px;overflow:hidden">
+        <div id="progressFill" style="height:100%;background:#10b981;border-radius:4px;transition:width 0.3s ease"></div>
+      </div>
+    </div>
     <div id="statsGrid" class="stats-grid"></div>
     <div class="bottom-foot">
       <div class="foot-text">Based on the normal approximation of the PERT Beta distribution. Use higher percentiles when committing to dates externally.</div>
@@ -249,11 +258,11 @@ function qnorm(p){
 }
 
 let O=3,M=7,P=14;
-let startDate=null,endDate=null;
+let startDate=null,endDate=null,completed=null;
 
 function readParams(){
   const q=new URLSearchParams(window.location.search);
-  if(q.has('o')||q.has('m')||q.has('p')||q.has('task')||q.has('unit')||q.has('start')||q.has('end'))return q;
+  if(q.has('o')||q.has('m')||q.has('p')||q.has('task')||q.has('unit')||q.has('start')||q.has('end')||q.has('completed'))return q;
   return null;
 }
 
@@ -269,12 +278,13 @@ function applyParams(){
   if(q.has('task'))document.getElementById('taskIn').value=q.get('task');
   if(q.has('start')){const d=new Date(q.get('start'));if(!isNaN(d.getTime())){d.setHours(0,0,0,0);startDate=d;}}
   if(q.has('end')){const d=new Date(q.get('end'));if(!isNaN(d.getTime())){d.setHours(0,0,0,0);endDate=d;}}
+  if(q.has('completed')){const v=parseFloat(q.get('completed'));if(!isNaN(v)&&v>=0)completed=v;}
 }
 
 const getUnit=()=>(document.getElementById('unitIn')?.value||'').trim();
 const cp=()=>{const mu=(O+4*M+P)/6,sg=(P-O)/6,q=p=>mu+qnorm(p)*sg;return{mu,sg,p50:mu,p75:q(.75),p80:q(.80),p90:q(.90),p95:q(.95)};};
 
-const COL_O='#15803d',COL_M='#b45309',COL_P='#b91c1c',COL_MU='#1e40af',COL_BRAND='#0d9488',COL_TODAY='#7c3aed';
+const COL_O='#15803d',COL_M='#b45309',COL_P='#b91c1c',COL_MU='#1e40af',COL_BRAND='#0d9488',COL_TODAY='#7c3aed',COL_DONE='#10b981';
 const GRID='rgba(10,46,42,0.06)',TICK='rgba(10,46,42,0.5)',AXIS='rgba(10,46,42,0.55)';
 
 function syncBounds(){
@@ -447,13 +457,24 @@ function updateDateBar(){
   bar.style.display='flex';
 }
 
+function updateProgress(){
+  const sec=document.getElementById('progressSection');
+  if(completed===null){sec.style.display='none';return;}
+  const s=cp(),pct=Math.min(100,completed/s.mu*100),rem=Math.max(0,s.mu-completed);
+  document.getElementById('progressFill').style.width=pct.toFixed(1)+'%';
+  const u=getUnit()||'days';
+  document.getElementById('progressText').textContent=
+    `${completed.toFixed(1)} / ${s.mu.toFixed(1)} ${u} done · ${pct.toFixed(0)}% · ${rem.toFixed(1)} ${u} remaining`;
+  sec.style.display='block';
+}
+
 function update(){
   const err=document.getElementById('errMsg');
   if(O>=M||M>=P){
     err.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v4M12 16h0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> ${O>=M?'Optimistic must be less than Most likely':'Most likely must be less than Pessimistic'}`;
     err.style.display='flex';return;
   }
-  err.style.display='none';syncBounds();applyUnit();updateStats();updateDateBar();buildCharts();buildCalChart();
+  err.style.display='none';syncBounds();applyUnit();updateStats();updateDateBar();updateProgress();buildCharts();buildCalChart();
 }
 
 function wire(sId,nId,set){
