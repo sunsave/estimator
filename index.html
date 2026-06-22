@@ -30,8 +30,7 @@ sl-card{width:100%}
 .card-M{--sl-color-primary-600:#b45309;--border-color:#b45309;--border-width:2px}
 .card-P{--sl-color-primary-600:#b91c1c;--border-color:#b91c1c;--border-width:2px}
 
-#timelineSection::part(base),#progressSection::part(base){border-color:var(--accent,var(--sl-color-neutral-200));border-width:2px}
-#progressSection{--accent:#15803d;--sl-color-primary-600:#15803d}
+#progressSection{--sl-color-primary-600:#15803d}
 .section-label{font-size:var(--sl-font-size-x-small);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--sl-color-neutral-500)}
 .stat.mu span{color:#1e40af}
 .stat.p80 span{color:#b45309}
@@ -465,11 +464,9 @@ function updateHeader(){
       const colors={'on-track':'#15803d','watch':'#b45309','at-risk':'#b91c1c'};
       if(pill){pill.textContent=labels[status];pill.variant=variants[status];}
       if(tip)tip.style.display='';
-      tlSection.style.setProperty('--accent',colors[status]);
       tlSection.style.setProperty('--sl-color-primary-600',colors[status]);
     }else{
       if(tip)tip.style.display='none';
-      tlSection.style.removeProperty('--accent');
       tlSection.style.removeProperty('--sl-color-primary-600');
     }
 
