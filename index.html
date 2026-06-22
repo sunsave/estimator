@@ -52,8 +52,8 @@ sl-card{width:100%}
 #calWrap{height:280px}
 
 .charts{display:grid;grid-template-columns:1fr 1fr;gap:var(--sl-spacing-medium)}
-.inputs{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sl-spacing-medium)}
-.date-fields{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sl-spacing-medium)}
+.drawer-body{display:flex;flex-direction:column;gap:var(--sl-spacing-large)}
+#editDrawer::part(overlay){background-color:rgba(10,46,42,0.18)}
 .estimate-input{display:flex;flex-direction:column;gap:var(--sl-spacing-medium)}
 
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(64px,1fr));gap:var(--sl-spacing-small)}
@@ -65,7 +65,7 @@ sl-card{width:100%}
 
 @media(max-width:760px){
   body{padding:16px 12px}
-  .charts,.inputs,.date-fields{grid-template-columns:1fr}
+  .charts{grid-template-columns:1fr}
   #calWrap{height:240px}
 }
 </style>
@@ -80,6 +80,10 @@ sl-card{width:100%}
         <div><strong>Sunsave</strong><br><small>PERT Estimator</small></div>
       </div>
       <sl-input id="taskIn" class="task-input" placeholder="Name this estimate…"></sl-input>
+      <sl-button id="editBtn">
+        <sl-icon slot="prefix" name="sliders2"></sl-icon>
+        Edit estimate
+      </sl-button>
       <sl-button id="dlBtn" variant="primary">
         <sl-icon slot="prefix" name="download"></sl-icon>
         Download PNG
@@ -167,44 +171,39 @@ sl-card{width:100%}
 
   <p class="disclaimer"><small>Based on the normal approximation of the PERT Beta distribution. Use higher percentiles when committing to dates externally.</small></p>
 
-  <sl-details id="estimatePanel" summary="Adjust estimates">
-    <div class="details-body">
-      <sl-card>
-        <div class="date-fields">
-          <sl-input id="unitIn" label="Unit" value="eng-pair-days" placeholder="eng-pair-days"></sl-input>
-          <sl-input id="startIn" type="date" label="Start date"></sl-input>
-          <sl-input id="endIn" type="date" label="End date"></sl-input>
+  <sl-drawer id="editDrawer" label="Edit estimate" placement="end">
+    <div class="drawer-body">
+      <sl-input id="unitIn" label="Unit" value="eng-pair-days" placeholder="eng-pair-days"></sl-input>
+      <sl-input id="startIn" type="date" label="Start date"></sl-input>
+      <sl-input id="endIn" type="date" label="End date"></sl-input>
+      <p>Three-point estimation gives you a probabilistic view of how long work will take. Provide your <b>optimistic</b>, <b>most likely</b>, and <b>pessimistic</b> estimates — the charts visualise the range of likely outcomes and the percentiles tell you what to commit to with confidence.</p>
+      <sl-card class="card-O">
+        <div class="estimate-input">
+          <sl-input id="oN" type="number" label="Optimistic" help-text="Best case — everything goes right" value="3" step="0.5" min="0" no-spin-buttons>
+            <span slot="suffix" class="unit">eng-days</span>
+          </sl-input>
+          <sl-range id="oS" min="0" max="28" step="0.5" value="3"></sl-range>
         </div>
       </sl-card>
-      <p>Three-point estimation gives you a probabilistic view of how long work will take. Provide your <b>optimistic</b>, <b>most likely</b>, and <b>pessimistic</b> estimates — the charts visualise the range of likely outcomes and the percentiles tell you what to commit to with confidence.</p>
-      <div class="inputs">
-        <sl-card class="card-O">
-          <div class="estimate-input">
-            <sl-input id="oN" type="number" label="Optimistic" help-text="Best case — everything goes right" value="3" step="0.5" min="0" no-spin-buttons>
-              <span slot="suffix" class="unit">eng-days</span>
-            </sl-input>
-            <sl-range id="oS" min="0" max="28" step="0.5" value="3"></sl-range>
-          </div>
-        </sl-card>
-        <sl-card class="card-M">
-          <div class="estimate-input">
-            <sl-input id="mN" type="number" label="Most likely" help-text="Realistic estimate based on what you know" value="7" step="0.5" min="0" no-spin-buttons>
-              <span slot="suffix" class="unit">eng-days</span>
-            </sl-input>
-            <sl-range id="mS" min="0" max="28" step="0.5" value="7"></sl-range>
-          </div>
-        </sl-card>
-        <sl-card class="card-P">
-          <div class="estimate-input">
-            <sl-input id="pN" type="number" label="Pessimistic" help-text="Worst case — assume things go sideways" value="14" step="0.5" min="0" no-spin-buttons>
-              <span slot="suffix" class="unit">eng-days</span>
-            </sl-input>
-            <sl-range id="pS" min="0" max="28" step="0.5" value="14"></sl-range>
-          </div>
-        </sl-card>
-      </div>
+      <sl-card class="card-M">
+        <div class="estimate-input">
+          <sl-input id="mN" type="number" label="Most likely" help-text="Realistic estimate based on what you know" value="7" step="0.5" min="0" no-spin-buttons>
+            <span slot="suffix" class="unit">eng-days</span>
+          </sl-input>
+          <sl-range id="mS" min="0" max="28" step="0.5" value="7"></sl-range>
+        </div>
+      </sl-card>
+      <sl-card class="card-P">
+        <div class="estimate-input">
+          <sl-input id="pN" type="number" label="Pessimistic" help-text="Worst case — assume things go sideways" value="14" step="0.5" min="0" no-spin-buttons>
+            <span slot="suffix" class="unit">eng-days</span>
+          </sl-input>
+          <sl-range id="pS" min="0" max="28" step="0.5" value="14"></sl-range>
+        </div>
+      </sl-card>
     </div>
-  </sl-details>
+    <sl-button slot="footer" variant="primary" id="doneBtn">Done</sl-button>
+  </sl-drawer>
 
 </div>
 
@@ -241,8 +240,6 @@ function applyDateInputs(){
 function applyParams(){
   startDate=null;endDate=null;completed=null;
   const q=readParams();
-  const panel=document.getElementById('estimatePanel');
-  if(panel)panel.open=!q;
   if(!q){applyDateInputs();return;}
   const num=(k,cur)=>{const v=parseFloat(q.get(k));return(q.has(k)&&!isNaN(v)&&v>=0)?v:cur;};
   O=num('o',O);M=num('m',M);P=num('p',P);
@@ -651,7 +648,7 @@ function downloadPng(){
 
 async function init(){
   await Promise.allSettled(
-    ['sl-input','sl-range','sl-details','sl-progress-bar','sl-badge','sl-button','sl-alert','sl-icon','sl-tooltip','sl-card']
+    ['sl-input','sl-range','sl-details','sl-progress-bar','sl-badge','sl-button','sl-alert','sl-icon','sl-tooltip','sl-card','sl-drawer']
       .map(t=>customElements.whenDefined(t))
   );
   wire('oS','oN',v=>O=v);wire('mS','mN',v=>M=v);wire('pS','pN',v=>P=v);
@@ -659,6 +656,9 @@ async function init(){
   document.getElementById('startIn').addEventListener('sl-change',()=>{applyDateInputs();update();});
   document.getElementById('endIn').addEventListener('sl-change',()=>{applyDateInputs();update();});
   document.getElementById('dlBtn').addEventListener('click',downloadPng);
+  const drawer=document.getElementById('editDrawer');
+  document.getElementById('editBtn').addEventListener('click',()=>drawer.show());
+  document.getElementById('doneBtn').addEventListener('click',()=>drawer.hide());
   applyParams();
   update();
 }
