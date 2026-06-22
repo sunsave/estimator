@@ -288,7 +288,7 @@ function getStatus(){
   return 'at-risk';
 }
 
-function pdfPlugin(){return{id:'pL',afterDraw(ch){
+function pdfPlugin(){return{id:'pL',afterDatasetsDraw(ch){
   const ctx=ch.ctx,{chartArea:ca,scales:sc}=ch,s=cp();
   [{x:O,c:COL_O,l:'O'},{x:M,c:COL_M,l:'M'},{x:P,c:COL_P,l:'P'},{x:s.mu,c:COL_MU,l:'μ'}].forEach(({x,c,l})=>{
     const px=sc.x.getPixelForValue(x);if(px<ca.left-2||px>ca.right+2)return;
@@ -300,7 +300,7 @@ function pdfPlugin(){return{id:'pL',afterDraw(ch){
   });
 }}}
 
-function cdfPlugin(){return{id:'cL',afterDraw(ch){
+function cdfPlugin(){return{id:'cL',afterDatasetsDraw(ch){
   const ctx=ch.ctx,{chartArea:ca,scales:sc}=ch,s=cp();
   [{p:.5,xv:s.p50,c:'rgba(10,46,42,0.42)',l:'P50'},{p:.8,xv:s.p80,c:COL_M,l:'P80'},{p:.9,xv:s.p90,c:COL_P,l:'P90'},{p:.95,xv:s.p95,c:COL_P95,l:'P95'}].forEach(({p,xv,c,l})=>{
     const px=sc.x.getPixelForValue(xv),py=sc.y.getPixelForValue(p);
@@ -310,13 +310,11 @@ function cdfPlugin(){return{id:'cL',afterDraw(ch){
     ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,ca.bottom);ctx.stroke();
     ctx.setLineDash([]);
     ctx.fillStyle=c;ctx.beginPath();ctx.arc(px,py,3,0,2*Math.PI);ctx.fill();
-    ctx.font='700 9.5px Inter,system-ui';
-    ctx.textAlign='right';ctx.fillText(l,ca.left-4,py+3.5);
     ctx.restore();
   });
 }}}
 
-function calPlugin(){return{id:'calP',afterDraw(ch){
+function calPlugin(){return{id:'calP',afterDatasetsDraw(ch){
   if(!startDate||!endDate)return;
   const ctx=ch.ctx,{chartArea:ca,scales:sc}=ch,s=cp();
   const toDate=v=>{const d=new Date(startDate.getTime()+v*864e5);return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});};
@@ -328,9 +326,6 @@ function calPlugin(){return{id:'calP',afterDraw(ch){
     ctx.beginPath();ctx.moveTo(ca.left,py);ctx.lineTo(px,py);ctx.stroke();
     ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,ca.bottom);ctx.stroke();
     ctx.setLineDash([]);ctx.fillStyle=c;ctx.beginPath();ctx.arc(px,py,3,0,2*Math.PI);ctx.fill();
-    ctx.font='700 9.5px Inter,system-ui';
-    ctx.textAlign='center';ctx.fillText(toDate(xv),px,ca.bottom+13);
-    ctx.textAlign='right';ctx.fillText(l,ca.left-4,py+3.5);
     ctx.restore();
   });
   const pxEnd=sc.x.getPixelForValue(totalDays);
@@ -352,8 +347,7 @@ function calPlugin(){return{id:'calP',afterDraw(ch){
       ctx.beginPath();ctx.moveTo(ca.left,py);ctx.lineTo(px,py);ctx.stroke();
       ctx.fillStyle=COL_TODAY;ctx.beginPath();ctx.arc(px,py,3.5,0,2*Math.PI);ctx.fill();
       ctx.font='700 9.5px Inter,system-ui';
-      ctx.textAlign='center';ctx.fillText(toDate(el),px,ca.bottom+26);
-      ctx.textAlign='right';ctx.fillText(`${(prob*100).toFixed(0)}%`,ca.left-4,py+3.5);
+      ctx.textAlign='left';ctx.fillText(`${(prob*100).toFixed(0)}%`,px+6,py-4);
       ctx.font='700 11px Inter,system-ui';ctx.textAlign='center';ctx.fillText('Today',px,ca.top-5);
       ctx.restore();
     }
