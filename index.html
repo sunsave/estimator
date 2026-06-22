@@ -26,18 +26,39 @@ body{background:linear-gradient(165deg,var(--teal-1) 0%,var(--teal-2) 100%);back
 .card{background:rgba(255,255,255,0.95);border:1px solid var(--ink-6);border-radius:16px;box-shadow:0 4px 24px rgba(10,46,42,0.06)}
 
 /* Header */
-.header{padding:22px 26px}
-.header-top{display:flex;align-items:center;justify-content:space-between;gap:24px}
-.brand{display:flex;align-items:center;gap:12px;flex-shrink:0}
-.brand-text .name{font-size:18px;font-weight:700;letter-spacing:-0.01em;line-height:1.1}
-.brand-text .tag{font-size:10px;font-weight:700;letter-spacing:0.14em;color:var(--ink-3);margin-top:2px}
-.field{background:rgba(10,46,42,0.04);border:1.5px solid transparent;border-radius:10px;padding:11px 14px;font:600 14px/1 'Inter',system-ui;color:var(--ink);outline:none;transition:all 0.15s;min-width:0}
+.header{padding:20px 24px}
+.header-top{display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.brand-text .name{font-size:16px;font-weight:700;letter-spacing:-0.01em;line-height:1.1}
+.brand-text .tag{font-size:9px;font-weight:700;letter-spacing:0.14em;color:var(--ink-3);margin-top:2px}
+.field{background:rgba(10,46,42,0.04);border:1.5px solid transparent;border-radius:10px;padding:10px 14px;font:600 14px/1 'Inter',system-ui;color:var(--ink);outline:none;transition:all 0.15s;min-width:0}
 .field::placeholder{color:var(--ink-4);font-weight:500}
 .field:focus{background:white;border-color:var(--brand);box-shadow:0 0 0 3px rgba(13,148,136,0.12)}
 .task-input{flex:1}
-.unit-input{width:130px;flex-shrink:0;text-align:center}
-.intro{font-size:13px;color:var(--ink-2);line-height:1.55;margin-top:14px;padding-top:14px;border-top:1px solid var(--ink-6)}
-.intro b{color:var(--ink);font-weight:600}
+
+/* Status pill */
+.status-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;flex-shrink:0;white-space:nowrap}
+.status-on-track{background:rgba(21,128,61,0.12);color:var(--green)}
+.status-watch{background:rgba(180,83,9,0.12);color:var(--amber)}
+.status-at-risk{background:rgba(185,28,28,0.12);color:var(--red)}
+
+/* Header collapsible sections */
+.header-sep{height:1px;background:var(--ink-6);margin:10px -24px 0}
+.header-section{padding-top:0}
+.header-section>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:10px 0 6px;user-select:none;-webkit-user-select:none}
+.header-section>summary::-webkit-details-marker{display:none}
+.section-toggle{font-size:13px;font-weight:700;color:var(--ink-4);display:inline-block;transition:transform 0.2s;flex-shrink:0;line-height:1;width:12px}
+details[open].header-section>summary .section-toggle{transform:rotate(90deg)}
+.section-label{font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-4);flex-shrink:0;width:64px}
+.section-info{font-size:12.5px;font-weight:600;color:var(--ink-2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.section-bar-wrap{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.section-bar{height:6px;background:var(--ink-6);border-radius:3px;overflow:hidden;width:110px}
+.section-bar-fill{height:100%;border-radius:3px;transition:width 0.35s ease;background:#10b981}
+.section-remaining{font-size:11px;color:var(--ink-3);white-space:nowrap}
+.section-content{padding:4px 0 10px;border-top:1px solid var(--ink-6);display:flex;flex-direction:column;gap:10px}
+.tl-detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stats-formula{font-family:'SF Mono',Monaco,'Cascadia Code',Consolas,monospace;font-size:10px;color:var(--ink-4)}
+.section-stats-head{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3)}
 
 /* Inputs */
 .inputs{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
@@ -67,6 +88,8 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;cur
 .sl.P::-webkit-slider-thumb{background:var(--red)}
 .sl.P::-moz-range-thumb{background:var(--red)}
 .in-hint{font-size:11.5px;color:var(--ink-3);margin-top:13px;line-height:1.4}
+.intro{font-size:13px;color:var(--ink-2);line-height:1.55}
+.intro b{color:var(--ink);font-weight:600}
 
 /* Charts */
 .charts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -76,12 +99,11 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;cur
 .ch-leg span{display:inline-flex;align-items:center;gap:4px}
 .ch-leg .d{width:7px;height:7px;border-radius:50%}
 .ch-wrap{position:relative;height:215px}
+#calWrap{height:280px}
 
 /* Stats + Footer */
-.bottom{padding:18px 22px}
-.bottom-head{display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px}
-.bottom-head .formula{font-family:'SF Mono',Monaco,'Cascadia Code',Consolas,monospace;font-size:10.5px;text-transform:none;letter-spacing:0;color:var(--ink-4);font-weight:500}
-.stats-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:14px}
+.bottom{padding:14px 22px}
+.stats-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
 .stat{text-align:center;padding:11px 6px 12px;border-radius:10px;background:rgba(10,46,42,0.035);transition:transform 0.15s}
 .stat:hover{transform:translateY(-1px)}
 .stat.primary{background:var(--blue-l)}
@@ -92,12 +114,10 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;cur
 .stat.warn .stat-l{color:var(--amber);opacity:0.85}
 .stat.danger .stat-l{color:var(--red);opacity:0.85}
 .stat-v{font:700 19px/1 'Inter',system-ui;letter-spacing:-0.01em;color:var(--ink);font-variant-numeric:tabular-nums}
-.stat-v .u{font-size:11px;font-weight:500;color:var(--ink-4);margin-left:1px}
 .stat.primary .stat-v{color:var(--blue)}
 .stat.warn .stat-v{color:var(--amber)}
 .stat.danger .stat-v{color:var(--red)}
-
-.bottom-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:14px;border-top:1px solid var(--ink-6)}
+.bottom-foot{display:flex;align-items:center;justify-content:space-between;gap:16px}
 .foot-text{font-size:11.5px;color:var(--ink-3);line-height:1.4}
 .btn{background:var(--ink);color:white;border:none;border-radius:10px;padding:11px 22px;font:700 13.5px/1 'Inter',system-ui;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:transform 0.1s,box-shadow 0.15s,background 0.15s;box-shadow:0 2px 10px rgba(10,46,42,0.18);flex-shrink:0;letter-spacing:-0.005em}
 .btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(10,46,42,0.25);background:#062018}
@@ -105,6 +125,30 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;cur
 
 /* Error */
 .error{padding:11px 16px;background:var(--red-l);border:1px solid rgba(185,28,28,0.25);border-radius:10px;color:var(--red);font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+
+/* Estimate panel disclosure */
+details#estimatePanel>summary{
+  list-style:none;cursor:pointer;
+  display:flex;align-items:center;gap:10px;
+  padding:14px 22px;
+  font:600 13px/1 'Inter',system-ui;
+  color:var(--ink-3);
+  background:rgba(255,255,255,0.95);
+  border:1px solid var(--ink-6);border-radius:16px;
+  box-shadow:0 4px 24px rgba(10,46,42,0.06);
+  transition:color 0.15s;
+  user-select:none;
+}
+details#estimatePanel>summary::-webkit-details-marker{display:none}
+details#estimatePanel>summary::before{content:'›';font-size:15px;font-weight:700;color:var(--ink-4);display:inline-block;transition:transform 0.2s;line-height:1}
+details[open]#estimatePanel>summary::before{transform:rotate(90deg)}
+details#estimatePanel>summary:hover{color:var(--ink-2)}
+details[open]#estimatePanel>summary{color:var(--ink-2)}
+details#estimatePanel>.panel-inner{padding-top:14px;display:flex;flex-direction:column;gap:14px}
+.date-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.date-field-label{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:6px}
+input[type=date].field{width:100%;cursor:pointer}
+@media(max-width:600px){.date-fields{grid-template-columns:1fr!important}}
 
 /* Responsive */
 @media(max-width:760px){
@@ -115,13 +159,27 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;cur
   .stat:nth-child(n+5){grid-column:span 1}
   .bottom-foot{flex-direction:column;align-items:stretch}
   .btn{justify-content:center}
-  .header-top{flex-direction:column;align-items:stretch;gap:10px}
-  .task-input,.unit-input{width:100%}
+  .header-top{flex-wrap:wrap}
+  .task-input{flex:1;min-width:120px}
+  .unit-input{width:100px}
+  .status-pill{margin-left:auto}
   .in-card{padding:16px 18px 18px}
   .in-value .num{font-size:32px;width:80px}
+  #calWrap{height:240px}
 }
 @media(max-width:480px){
   .stats-grid{grid-template-columns:repeat(3,1fr)}
+  .header-top{gap:10px}
+  .status-pill{width:100%;justify-content:center}
+}
+@media(max-width:760px){
+  .tl-detail-grid{grid-template-columns:repeat(2,1fr)}
+  .section-bar{width:70px}
+  .section-info{font-size:11.5px}
+  .section-remaining{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .header-progress-fill,.btn,.stat,details#estimatePanel>summary::before{transition:none}
 }
 </style>
 </head>
@@ -131,50 +189,52 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;cur
   <header class="card header">
     <div class="header-top">
       <div class="brand">
-        <svg fill="none" height="36" viewBox="0 0 32 32" width="36" xmlns="http://www.w3.org/2000/svg"><clipPath id="ssC"><path d="m0 0h32v32h-32z"/></clipPath><g clip-path="url(#ssC)"><path d="m15.9853 14.6616c-2.6801 0-4.8608 2.1808-4.8608 4.8608 0 1.3033.5169 2.4879 1.3549 3.3617h7.0111c.838-.8738 1.3549-2.0584 1.3549-3.3617 0-2.68-2.1807-4.8608-4.8607-4.8608z" fill="#fbfb4b"/><g fill="#0a2e2a"><path d="m16.5427 11.804h-1.1161l-.2357-3.804h1.5875z"/><path d="m21.3736 13.9685-.8555-.7174 2.2649-3.0654 1.2167 1.0204z"/><path d="m23.6827 18.7315-.1939-1.0997 3.7052-.8925.2757 1.5639z"/><path d="m11.4519 13.2511-.8556.7174-2.62609-2.7624 1.21671-1.0204z"/><path d="m8.48094 17.6318-.1939 1.0997-3.78704-.4283.2757-1.5639z"/><path d="m25.012 24.0001-1.1119-2.4237h-2.3025c.2351-.6411.3635-1.3331.3635-2.0547 0-3.2957-2.6812-5.9769-5.9769-5.9769-3.2956 0-5.9768 2.6812-5.9768 5.9769 0 .7216.1284 1.4136.3635 2.0547h-2.30248l-1.11188 2.4237zm-9.0271-9.2434c2.6279 0 4.765 2.1377 4.765 4.765 0 1.2633-.4951 2.4128-1.3004 3.2665h-6.9299c-.8053-.8537-1.3004-2.0032-1.3004-3.2665 0-2.6273 2.1378-4.765 4.765-4.765z"/></g></g></svg>
+        <svg fill="none" height="34" viewBox="0 0 32 32" width="34" xmlns="http://www.w3.org/2000/svg"><clipPath id="ssC"><path d="m0 0h32v32h-32z"/></clipPath><g clip-path="url(#ssC)"><path d="m15.9853 14.6616c-2.6801 0-4.8608 2.1808-4.8608 4.8608 0 1.3033.5169 2.4879 1.3549 3.3617h7.0111c.838-.8738 1.3549-2.0584 1.3549-3.3617 0-2.68-2.1807-4.8608-4.8607-4.8608z" fill="#fbfb4b"/><g fill="#0a2e2a"><path d="m16.5427 11.804h-1.1161l-.2357-3.804h1.5875z"/><path d="m21.3736 13.9685-.8555-.7174 2.2649-3.0654 1.2167 1.0204z"/><path d="m23.6827 18.7315-.1939-1.0997 3.7052-.8925.2757 1.5639z"/><path d="m11.4519 13.2511-.8556.7174-2.62609-2.7624 1.21671-1.0204z"/><path d="m8.48094 17.6318-.1939 1.0997-3.78704-.4283.2757-1.5639z"/><path d="m25.012 24.0001-1.1119-2.4237h-2.3025c.2351-.6411.3635-1.3331.3635-2.0547 0-3.2957-2.6812-5.9769-5.9769-5.9769-3.2956 0-5.9768 2.6812-5.9768 5.9769 0 .7216.1284 1.4136.3635 2.0547h-2.30248l-1.11188 2.4237zm-9.0271-9.2434c2.6279 0 4.765 2.1377 4.765 4.765 0 1.2633-.4951 2.4128-1.3004 3.2665h-6.9299c-.8053-.8537-1.3004-2.0032-1.3004-3.2665 0-2.6273 2.1378-4.765 4.765-4.765z"/></g></g></svg>
         <div class="brand-text">
           <div class="name">Sunsave</div>
           <div class="tag">PERT ESTIMATOR</div>
         </div>
       </div>
-      <input id="taskIn" class="field task-input" placeholder="Name this estimate (e.g. 'Onboarding flow redesign')…"/>
-      <input id="unitIn" class="field unit-input" value="eng-days" placeholder="eng-days" aria-label="Unit"/>
+      <input id="taskIn" class="field task-input" placeholder="Name this estimate…"/>
+      <button id="dlBtn" class="btn" style="flex-shrink:0">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Download PNG
+      </button>
     </div>
-    <p class="intro">
-      Three-point estimation gives you a probabilistic view of how long work will take. Provide your <b>optimistic</b>, <b>most likely</b>, and <b>pessimistic</b> estimates below — the charts visualise the range of likely outcomes, and the percentiles tell you what to commit to with confidence.
-    </p>
-    <div id="dateBar" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--ink-6);font-size:12px;color:var(--ink-3)"></div>
+    <div id="timelineSep" class="header-sep" style="display:none"></div>
+    <details id="timelineSection" class="header-section" style="display:none">
+      <summary>
+        <span class="section-toggle">›</span>
+        <span class="section-label">Timeline</span>
+        <span id="tlInfo" class="section-info"></span>
+        <div class="section-bar-wrap">
+          <div class="section-bar"><div id="tlFill" class="section-bar-fill"></div></div>
+          <span id="tlRemaining" class="section-remaining"></span>
+          <span id="statusPill" style="display:none" class="status-pill"></span>
+        </div>
+      </summary>
+      <div class="section-content">
+        <div id="tlDetail" class="tl-detail-grid"></div>
+      </div>
+    </details>
+    <div id="progressSep" class="header-sep" style="display:none"></div>
+    <details id="progressSection" class="header-section" style="display:none">
+      <summary>
+        <span class="section-toggle">›</span>
+        <span class="section-label">Progress</span>
+        <span id="prInfo" class="section-info"></span>
+        <div class="section-bar-wrap">
+          <div class="section-bar"><div id="progressFill" class="section-bar-fill"></div></div>
+          <span id="prRemaining" class="section-remaining"></span>
+        </div>
+      </summary>
+      <div class="section-content">
+        <div class="section-stats-head">Statistics<span id="unitNote"> · in eng-pair-days</span></div>
+        <div id="statsGrid" class="stats-grid"></div>
+        <div class="stats-formula">μ = (O + 4M + P) / 6 &nbsp;·&nbsp; σ = (P − O) / 6</div>
+      </div>
+    </details>
   </header>
-
-  <section class="inputs">
-    <div class="card in-card O">
-      <div class="in-head O"><span class="dot"></span>Optimistic</div>
-      <div class="in-value">
-        <input id="oN" class="num" type="number" value="3" step="0.5" min="0"/>
-        <span class="unit">eng-days</span>
-      </div>
-      <input id="oS" class="sl O" type="range" min="0" max="28" step="0.5" value="3"/>
-      <div class="in-hint">Best-case scenario — everything goes right</div>
-    </div>
-    <div class="card in-card M">
-      <div class="in-head M"><span class="dot"></span>Most likely</div>
-      <div class="in-value">
-        <input id="mN" class="num" type="number" value="7" step="0.5" min="0"/>
-        <span class="unit">eng-days</span>
-      </div>
-      <input id="mS" class="sl M" type="range" min="0" max="28" step="0.5" value="7"/>
-      <div class="in-hint">Realistic estimate based on what you know</div>
-    </div>
-    <div class="card in-card P">
-      <div class="in-head P"><span class="dot"></span>Pessimistic</div>
-      <div class="in-value">
-        <input id="pN" class="num" type="number" value="14" step="0.5" min="0"/>
-        <span class="unit">eng-days</span>
-      </div>
-      <input id="pS" class="sl P" type="range" min="0" max="28" step="0.5" value="14"/>
-      <div class="in-hint">Worst case — assume things go sideways</div>
-    </div>
-  </section>
 
   <div id="errMsg" class="error" style="display:none"></div>
 
@@ -185,11 +245,12 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;cur
         <div class="ch-leg">
           <span style="color:rgba(10,46,42,0.5)">P50</span>
           <span style="color:#b45309">P80</span>
-          <span style="color:#b91c1c">P90 / End</span>
+          <span style="color:#b91c1c">P90</span>
+          <span style="color:#7f1d1d">P95 / End</span>
           <span style="color:#7c3aed">Today</span>
         </div>
       </div>
-      <div class="ch-wrap"><canvas id="calC" role="img" aria-label="Timeline cumulative distribution"></canvas></div>
+      <div class="ch-wrap" id="calWrap"><canvas id="calC" role="img" aria-label="Timeline cumulative distribution"></canvas></div>
     </div>
   </section>
 
@@ -213,35 +274,59 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;cur
           <span style="color:rgba(10,46,42,0.5)">P50</span>
           <span style="color:#b45309">P80</span>
           <span style="color:#b91c1c">P90</span>
+          <span style="color:#7f1d1d">P95</span>
         </div>
       </div>
       <div class="ch-wrap"><canvas id="cdfC" role="img" aria-label="Cumulative distribution function"></canvas></div>
     </div>
   </section>
 
-  <section class="card bottom">
-    <div class="bottom-head">
-      <span>Statistics<span id="unitNote" style="font-weight:600;opacity:0.55"> · in eng-days</span></span>
-      <span class="formula">μ = (O + 4M + P) / 6 &nbsp;·&nbsp; σ = (P − O) / 6</span>
-    </div>
-    <div id="progressSection" style="display:none;margin-bottom:14px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;color:var(--ink-3)">PROGRESS</span>
-        <span id="progressText" style="font-size:11.5px;font-weight:600;color:var(--ink-2)"></span>
+  <p style="text-align:center;font-size:11px;color:rgba(10,46,42,0.4);padding:4px 0 8px">Based on the normal approximation of the PERT Beta distribution. Use higher percentiles when committing to dates externally.</p>
+
+  <details id="estimatePanel">
+    <summary>Adjust estimates</summary>
+    <div class="panel-inner">
+      <div class="card" style="padding:16px 20px">
+        <div class="date-fields" style="grid-template-columns:1fr 1fr 1fr">
+          <div><span class="date-field-label">Unit</span><input id="unitIn" class="field" style="width:100%" value="eng-pair-days" placeholder="eng-pair-days" aria-label="Unit"/></div>
+          <div><span class="date-field-label">Start date</span><input type="date" id="startIn" class="field"/></div>
+          <div><span class="date-field-label">End date</span><input type="date" id="endIn" class="field"/></div>
+        </div>
       </div>
-      <div style="height:8px;background:var(--ink-6);border-radius:4px;overflow:hidden">
-        <div id="progressFill" style="height:100%;background:#10b981;border-radius:4px;transition:width 0.3s ease"></div>
-      </div>
+      <p class="intro">
+        Three-point estimation gives you a probabilistic view of how long work will take. Provide your <b>optimistic</b>, <b>most likely</b>, and <b>pessimistic</b> estimates — the charts visualise the range of likely outcomes and the percentiles tell you what to commit to with confidence.
+      </p>
+      <section class="inputs">
+        <div class="card in-card O">
+          <div class="in-head O"><span class="dot"></span>Optimistic</div>
+          <div class="in-value">
+            <input id="oN" class="num" type="number" value="3" step="0.5" min="0"/>
+            <span class="unit">eng-days</span>
+          </div>
+          <input id="oS" class="sl O" type="range" min="0" max="28" step="0.5" value="3"/>
+          <div class="in-hint">Best-case scenario — everything goes right</div>
+        </div>
+        <div class="card in-card M">
+          <div class="in-head M"><span class="dot"></span>Most likely</div>
+          <div class="in-value">
+            <input id="mN" class="num" type="number" value="7" step="0.5" min="0"/>
+            <span class="unit">eng-days</span>
+          </div>
+          <input id="mS" class="sl M" type="range" min="0" max="28" step="0.5" value="7"/>
+          <div class="in-hint">Realistic estimate based on what you know</div>
+        </div>
+        <div class="card in-card P">
+          <div class="in-head P"><span class="dot"></span>Pessimistic</div>
+          <div class="in-value">
+            <input id="pN" class="num" type="number" value="14" step="0.5" min="0"/>
+            <span class="unit">eng-days</span>
+          </div>
+          <input id="pS" class="sl P" type="range" min="0" max="28" step="0.5" value="14"/>
+          <div class="in-hint">Worst case — assume things go sideways</div>
+        </div>
+      </section>
     </div>
-    <div id="statsGrid" class="stats-grid"></div>
-    <div class="bottom-foot">
-      <div class="foot-text">Based on the normal approximation of the PERT Beta distribution. Use higher percentiles when committing to dates externally.</div>
-      <button id="dlBtn" class="btn">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Download PNG
-      </button>
-    </div>
-  </section>
+  </details>
 
 </div>
 
@@ -266,9 +351,21 @@ function readParams(){
   return null;
 }
 
+const fmtDateInput=d=>d.toISOString().split('T')[0];
+
+function applyDateInputs(){
+  const sv=document.getElementById('startIn')?.value;
+  const ev=document.getElementById('endIn')?.value;
+  if(sv){const d=new Date(sv);if(!isNaN(d.getTime())){d.setHours(0,0,0,0);startDate=d;}}else{startDate=null;}
+  if(ev){const d=new Date(ev);if(!isNaN(d.getTime())){d.setHours(0,0,0,0);endDate=d;}}else{endDate=null;}
+}
+
 function applyParams(){
-  startDate=null;endDate=null;
-  const q=readParams();if(!q)return;
+  startDate=null;endDate=null;completed=null;
+  const q=readParams();
+  const panel=document.getElementById('estimatePanel');
+  if(panel)panel.open=!q;
+  if(!q){applyDateInputs();return;}
   const num=(k,cur)=>{const v=parseFloat(q.get(k));return(q.has(k)&&!isNaN(v)&&v>=0)?v:cur;};
   O=num('o',O);M=num('m',M);P=num('p',P);
   ['oN','oS'].forEach(id=>document.getElementById(id).value=O);
@@ -279,17 +376,38 @@ function applyParams(){
   if(q.has('start')){const d=new Date(q.get('start'));if(!isNaN(d.getTime())){d.setHours(0,0,0,0);startDate=d;}}
   if(q.has('end')){const d=new Date(q.get('end'));if(!isNaN(d.getTime())){d.setHours(0,0,0,0);endDate=d;}}
   if(q.has('completed')){const v=parseFloat(q.get('completed'));if(!isNaN(v)&&v>=0)completed=v;}
+  const si=document.getElementById('startIn');
+  const ei=document.getElementById('endIn');
+  if(si&&startDate)si.value=fmtDateInput(startDate);
+  if(ei&&endDate)ei.value=fmtDateInput(endDate);
 }
 
 const getUnit=()=>(document.getElementById('unitIn')?.value||'').trim();
 const cp=()=>{const mu=(O+4*M+P)/6,sg=(P-O)/6,q=p=>mu+qnorm(p)*sg;return{mu,sg,p50:mu,p75:q(.75),p80:q(.80),p90:q(.90),p95:q(.95)};};
 
-const COL_O='#15803d',COL_M='#b45309',COL_P='#b91c1c',COL_MU='#1e40af',COL_BRAND='#0d9488',COL_TODAY='#7c3aed',COL_DONE='#10b981';
+const COL_O='#15803d',COL_M='#b45309',COL_P='#b91c1c',COL_P95='#7f1d1d',COL_MU='#1e40af',COL_BRAND='#0d9488',COL_TODAY='#7c3aed',COL_DONE='#10b981';
 const GRID='rgba(10,46,42,0.06)',TICK='rgba(10,46,42,0.5)',AXIS='rgba(10,46,42,0.55)';
+
+const TTip={
+  enabled:true,mode:'index',intersect:false,
+  backgroundColor:'#0a2e2a',titleColor:'#caf1ed',
+  bodyColor:'rgba(202,241,237,0.8)',borderColor:'rgba(78,229,211,0.3)',
+  borderWidth:1,padding:10,cornerRadius:8,displayColors:false,
+};
 
 function syncBounds(){
   const mx=Math.ceil(Math.max(P*1.6,20)/5)*5;
   ['oS','mS','pS'].forEach(id=>document.getElementById(id).max=mx);
+}
+
+function getStatus(){
+  if(!startDate)return null;
+  const el=getElapsed();
+  if(el===null||el<=0)return null;
+  const s=cp();
+  if(el<=s.p50)return 'on-track';
+  if(el<=s.p80)return 'watch';
+  return 'at-risk';
 }
 
 function pdfPlugin(){return{id:'pL',afterDraw(ch){
@@ -306,7 +424,7 @@ function pdfPlugin(){return{id:'pL',afterDraw(ch){
 
 function cdfPlugin(){return{id:'cL',afterDraw(ch){
   const ctx=ch.ctx,{chartArea:ca,scales:sc}=ch,s=cp();
-  [{p:.5,xv:s.p50,c:'rgba(10,46,42,0.42)',l:'P50'},{p:.8,xv:s.p80,c:COL_M,l:'P80'},{p:.9,xv:s.p90,c:COL_P,l:'P90'}].forEach(({p,xv,c,l})=>{
+  [{p:.5,xv:s.p50,c:'rgba(10,46,42,0.42)',l:'P50'},{p:.8,xv:s.p80,c:COL_M,l:'P80'},{p:.9,xv:s.p90,c:COL_P,l:'P90'},{p:.95,xv:s.p95,c:COL_P95,l:'P95'}].forEach(({p,xv,c,l})=>{
     const px=sc.x.getPixelForValue(xv),py=sc.y.getPixelForValue(p);
     if(px<ca.left||px>ca.right)return;
     ctx.save();ctx.strokeStyle=c;ctx.lineWidth=1.3;ctx.setLineDash([4,4]);
@@ -315,7 +433,6 @@ function cdfPlugin(){return{id:'cL',afterDraw(ch){
     ctx.setLineDash([]);
     ctx.fillStyle=c;ctx.beginPath();ctx.arc(px,py,3,0,2*Math.PI);ctx.fill();
     ctx.font='700 9.5px Inter,system-ui';
-    ctx.textAlign='center';ctx.fillText(xv.toFixed(1),px,ca.bottom+13);
     ctx.textAlign='right';ctx.fillText(l,ca.left-4,py+3.5);
     ctx.restore();
   });
@@ -326,8 +443,7 @@ function calPlugin(){return{id:'calP',afterDraw(ch){
   const ctx=ch.ctx,{chartArea:ca,scales:sc}=ch,s=cp();
   const toDate=v=>{const d=new Date(startDate.getTime()+v*864e5);return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});};
   const totalDays=(endDate.getTime()-startDate.getTime())/864e5;
-  // P50/P80/P90 crosshairs (dates on x-axis)
-  [{p:.5,xv:s.p50,c:'rgba(10,46,42,0.42)',l:'P50'},{p:.8,xv:s.p80,c:COL_M,l:'P80'},{p:.9,xv:s.p90,c:COL_P,l:'P90'}].forEach(({p,xv,c,l})=>{
+  [{p:.5,xv:s.p50,c:'rgba(10,46,42,0.42)',l:'P50'},{p:.8,xv:s.p80,c:COL_M,l:'P80'},{p:.9,xv:s.p90,c:COL_P,l:'P90'},{p:.95,xv:s.p95,c:COL_P95,l:'P95'}].forEach(({p,xv,c,l})=>{
     const px=sc.x.getPixelForValue(xv),py=sc.y.getPixelForValue(p);
     if(px<ca.left||px>ca.right)return;
     ctx.save();ctx.strokeStyle=c;ctx.lineWidth=1.3;ctx.setLineDash([4,4]);
@@ -339,7 +455,6 @@ function calPlugin(){return{id:'calP',afterDraw(ch){
     ctx.textAlign='right';ctx.fillText(l,ca.left-4,py+3.5);
     ctx.restore();
   });
-  // End date line
   const pxEnd=sc.x.getPixelForValue(totalDays);
   if(pxEnd>=ca.left&&pxEnd<=ca.right){
     ctx.save();ctx.strokeStyle=COL_P;ctx.lineWidth=1.5;ctx.setLineDash([5,3]);
@@ -348,7 +463,6 @@ function calPlugin(){return{id:'calP',afterDraw(ch){
     ctx.font='700 11px Inter,system-ui';ctx.textAlign='center';ctx.fillText('End',pxEnd,ca.top-5);
     ctx.restore();
   }
-  // Today line
   const el=getElapsed();
   if(el!==null&&el>0){
     const px=sc.x.getPixelForValue(el);
@@ -375,15 +489,30 @@ function buildCharts(){
   const xMin=Math.max(0,Math.min(O-pad,mu-3.5*sg)),xMax=Math.max(P+pad,mu+3.5*sg);
   const N=280,pts=[];
   for(let i=0;i<=N;i++){const x=xMin+(xMax-xMin)*i/N;pts.push({x,pdf:npdf(x,mu,sg),cdf:ncdf(x,mu,sg)});}
-  const scX={type:'linear',min:xMin,max:xMax,grid:{color:GRID,drawTicks:false},border:{display:false},ticks:{color:TICK,font:{size:10,family:'Inter',weight:'500'},maxTicksLimit:7,padding:6},title:{display:true,text:getUnit()||'units',color:AXIS,font:{size:10.5,family:'Inter',weight:'600'},padding:{top:8}}};
+  const u=getUnit()||'units';
+  const scX={type:'linear',min:xMin,max:xMax,grid:{color:GRID,drawTicks:false},border:{display:false},ticks:{color:TICK,font:{size:10,family:'Inter',weight:'500'},maxTicksLimit:7,padding:6},title:{display:true,text:u,color:AXIS,font:{size:10.5,family:'Inter',weight:'600'},padding:{top:8}}};
   const scY={grid:{color:GRID,drawTicks:false},border:{display:false},ticks:{color:TICK,font:{size:9.5,family:'Inter',weight:'500'},padding:6}};
-  const opts={responsive:true,maintainAspectRatio:false,animation:{duration:160,easing:'easeOutQuart'},plugins:{legend:{display:false},tooltip:{enabled:false}},layout:{padding:{top:18,right:8,left:4,bottom:0}}};
+  const baseOpts={responsive:true,maintainAspectRatio:false,animation:{duration:160,easing:'easeOutQuart'},plugins:{legend:{display:false}},layout:{padding:{top:18,right:8,left:4,bottom:0}}};
 
   if(pCh)pCh.destroy();
-  pCh=new Chart(document.getElementById('pdfC'),{type:'line',data:{datasets:[{data:pts.map(p=>({x:p.x,y:p.pdf})),borderColor:COL_BRAND,backgroundColor:'rgba(13,148,136,0.13)',fill:true,pointRadius:0,tension:.35,borderWidth:2.2}]},options:{...opts,scales:{x:scX,y:{...scY,title:{display:true,text:'Density',color:AXIS,font:{size:10.5,family:'Inter',weight:'600'}}}}},plugins:[pdfPlugin()]});
+  pCh=new Chart(document.getElementById('pdfC'),{type:'line',
+    data:{datasets:[{data:pts.map(p=>({x:p.x,y:p.pdf})),borderColor:COL_BRAND,backgroundColor:'rgba(13,148,136,0.13)',fill:true,pointRadius:0,tension:.35,borderWidth:2.2}]},
+    options:{...baseOpts,scales:{x:scX,y:{...scY,title:{display:true,text:'Density',color:AXIS,font:{size:10.5,family:'Inter',weight:'600'}}}},
+      plugins:{legend:{display:false},tooltip:{...TTip,callbacks:{
+        title:items=>`${items[0].parsed.x.toFixed(1)} ${u}`,
+        label:item=>`Density: ${item.parsed.y.toFixed(4)}`
+      }}}},
+    plugins:[pdfPlugin()]});
 
   if(cCh)cCh.destroy();
-  cCh=new Chart(document.getElementById('cdfC'),{type:'line',data:{datasets:[{data:pts.map(p=>({x:p.x,y:p.cdf})),borderColor:COL_MU,backgroundColor:'rgba(30,64,175,0.08)',fill:true,pointRadius:0,tension:.35,borderWidth:2.2}]},options:{...opts,scales:{x:scX,y:{...scY,min:0,max:1,title:{display:true,text:'Probability',color:AXIS,font:{size:10.5,family:'Inter',weight:'600'}},ticks:{...scY.ticks,callback:v=>`${(v*100).toFixed(0)}%`,maxTicksLimit:6}}}},plugins:[cdfPlugin()]});
+  cCh=new Chart(document.getElementById('cdfC'),{type:'line',
+    data:{datasets:[{data:pts.map(p=>({x:p.x,y:p.cdf})),borderColor:COL_MU,backgroundColor:'rgba(30,64,175,0.08)',fill:true,pointRadius:0,tension:.35,borderWidth:2.2}]},
+    options:{...baseOpts,scales:{x:scX,y:{...scY,min:0,max:1,title:{display:true,text:'Probability',color:AXIS,font:{size:10.5,family:'Inter',weight:'600'}},ticks:{...scY.ticks,callback:v=>`${(v*100).toFixed(0)}%`,maxTicksLimit:6}}},
+      plugins:{legend:{display:false},tooltip:{...TTip,callbacks:{
+        title:items=>`${items[0].parsed.x.toFixed(1)} ${u}`,
+        label:item=>`Probability: ${(item.parsed.y*100).toFixed(1)}%`
+      }}}},
+    plugins:[cdfPlugin()]});
 }
 
 function buildCalChart(){
@@ -395,18 +524,23 @@ function buildCalChart(){
   const xMax=Math.max(totalDays*1.08,mu+3*sg);
   const N=280,pts=[];
   for(let i=0;i<=N;i++){const x=xMax*i/N;pts.push({x,y:ncdf(x,mu,sg)});}
-  const toDate=v=>{const d=new Date(startDate.getTime()+v*864e5);return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});};
+  const toDateFull=v=>{const d=new Date(startDate.getTime()+v*864e5);return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'long'});};
+  const toDateShort=v=>{const d=new Date(startDate.getTime()+v*864e5);return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});};
   const scX={type:'linear',min:0,max:xMax,grid:{color:GRID,drawTicks:false},border:{display:false},
-    ticks:{color:TICK,font:{size:10,family:'Inter',weight:'500'},maxTicksLimit:7,padding:6,callback:toDate}};
+    ticks:{color:TICK,font:{size:10,family:'Inter',weight:'500'},maxTicksLimit:7,padding:6,callback:toDateShort}};
   const scY={grid:{color:GRID,drawTicks:false},border:{display:false},min:0,max:1,
     ticks:{color:TICK,font:{size:9.5,family:'Inter',weight:'500'},padding:6,callback:v=>`${(v*100).toFixed(0)}%`,maxTicksLimit:6},
     title:{display:true,text:'Probability',color:AXIS,font:{size:10.5,family:'Inter',weight:'600'}}};
-  const opts={responsive:true,maintainAspectRatio:false,animation:{duration:160,easing:'easeOutQuart'},
-    plugins:{legend:{display:false},tooltip:{enabled:false}},layout:{padding:{top:18,right:8,left:4,bottom:0}}};
+  const baseOpts={responsive:true,maintainAspectRatio:false,animation:{duration:160,easing:'easeOutQuart'},layout:{padding:{top:18,right:8,left:4,bottom:0}}};
   if(calCh)calCh.destroy();
   calCh=new Chart(document.getElementById('calC'),{type:'line',
     data:{datasets:[{data:pts,borderColor:COL_MU,backgroundColor:'rgba(30,64,175,0.08)',fill:true,pointRadius:0,tension:.35,borderWidth:2.2}]},
-    options:{...opts,scales:{x:scX,y:scY}},plugins:[calPlugin()]});
+    options:{...baseOpts,scales:{x:scX,y:scY},
+      plugins:{legend:{display:false},tooltip:{...TTip,callbacks:{
+        title:items=>toDateFull(items[0].parsed.x),
+        label:item=>`Probability of completion: ${(item.parsed.y*100).toFixed(1)}%`
+      }}}},
+    plugins:[calPlugin()]});
 }
 
 function updateStats(){
@@ -437,35 +571,66 @@ const getElapsed=()=>{
   return(t.getTime()-startDate.getTime())/864e5;
 };
 
-function updateDateBar(){
-  const bar=document.getElementById('dateBar');
+function updateHeader(){
   const el=getElapsed();
-  if(!startDate){bar.style.display='none';return;}
-  const fmt=d=>d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-  const parts=[`📅 ${fmt(startDate)}${endDate?' → '+fmt(endDate):''}`];
-  if(el<0){parts.push(`Starts in ${Math.abs(el).toFixed(0)} days`);}
-  else{
-    const d=el%1<.1?`${Math.round(el)}`:el.toFixed(1);
-    if(endDate){
-      const tot=(endDate.getTime()-startDate.getTime())/864e5;
-      const rem=Math.max(0,tot-el);
-      parts.push(`Day ${d} of ${Math.round(tot)}`);
-      parts.push(`${rem.toFixed(1)} days remaining`);
-    }else{parts.push(`Day ${d}`);}
-  }
-  bar.innerHTML=parts.map((p,i)=>i?`<span style="opacity:.4">·</span><span>${p}</span>`:`<span>${p}</span>`).join('');
-  bar.style.display='flex';
-}
+  const s=cp();
+  const fmtShort=d=>d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  const show=(id,v)=>{const e=document.getElementById(id);if(e)e.style.display=v?'':'none';};
 
-function updateProgress(){
-  const sec=document.getElementById('progressSection');
-  if(completed===null){sec.style.display='none';return;}
-  const s=cp(),pct=Math.min(100,completed/s.mu*100),rem=Math.max(0,s.mu-completed);
-  document.getElementById('progressFill').style.width=pct.toFixed(1)+'%';
-  const u=getUnit()||'days';
-  document.getElementById('progressText').textContent=
-    `${completed.toFixed(1)} / ${s.mu.toFixed(1)} ${u} done · ${pct.toFixed(0)}% · ${rem.toFixed(1)} ${u} remaining`;
-  sec.style.display='block';
+  // ── Timeline section ──────────────────────────────────────────
+  show('timelineSep',!!startDate);
+  show('timelineSection',!!startDate);
+  if(startDate){
+    document.getElementById('timelineSection').style.display='';
+    const dateStr=fmtShort(startDate)+(endDate?' → '+fmtShort(endDate):'');
+    const d=el!==null?(el%1<.1?Math.round(el):el.toFixed(1)):null;
+    const tot=endDate?(endDate.getTime()-startDate.getTime())/864e5:null;
+    let info=dateStr;
+    if(el!==null&&el<0)info+=`  ·  Starts in ${Math.abs(el).toFixed(0)} days`;
+    else if(d!==null)info+=`  ·  Day ${d}${tot?' of '+Math.round(tot):''}`;
+    document.getElementById('tlInfo').textContent=info;
+
+    // Bar fill = % through the calendar range
+    const tlFill=document.getElementById('tlFill');
+    if(tlFill&&tot&&el!==null){tlFill.style.width=Math.min(100,Math.max(0,(el/tot)*100)).toFixed(1)+'%';}
+    const tlRem=document.getElementById('tlRemaining');
+    if(tlRem&&tot&&el!==null&&el>=0)tlRem.textContent=`${Math.max(0,tot-el).toFixed(1)} calendar days remaining`;
+    else if(tlRem)tlRem.textContent='';
+
+    // Status pill
+    const status=getStatus();
+    const pill=document.getElementById('statusPill');
+    if(pill){
+      if(status){
+        const labels={'on-track':'✓ On track','watch':'⚠ Watch','at-risk':'✕ At risk'};
+        pill.textContent=labels[status];pill.className='status-pill status-'+status;pill.style.display='inline-flex';
+        const colors={'on-track':COL_O,'watch':COL_M,'at-risk':COL_P};
+        if(tlFill)tlFill.style.background=colors[status];
+      }else{pill.style.display='none';}
+    }
+
+    // Timeline detail: P50/P80/P90/P95 as calendar dates
+    const tlDetail=document.getElementById('tlDetail');
+    if(tlDetail){
+      const fmtFull=v=>{const dd=new Date(startDate.getTime()+v*864e5);return dd.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});};
+      tlDetail.innerHTML=[{l:'P50',v:s.p50,cls:''},{l:'P80',v:s.p80,cls:'warn'},{l:'P90',v:s.p90,cls:'danger'},{l:'P95',v:s.p95,cls:'danger'}]
+        .map(({l,v,cls})=>`<div class="stat ${cls}"><div class="stat-l">${l}</div><div class="stat-v" style="font-size:13px;letter-spacing:0">${fmtFull(v)}</div></div>`)
+        .join('');
+    }
+  }
+
+  // ── Progress section ──────────────────────────────────────────
+  show('progressSep',completed!==null);
+  show('progressSection',completed!==null);
+  if(completed!==null){
+    const pct=Math.min(100,completed/s.mu*100),rem=Math.max(0,s.mu-completed);
+    const u=getUnit()||'days';
+    document.getElementById('prInfo').textContent=`${completed.toFixed(1)} / ${s.mu.toFixed(1)} ${u} done  ·  ${pct.toFixed(0)}%`;
+    const prFill=document.getElementById('progressFill');
+    if(prFill)prFill.style.width=pct.toFixed(1)+'%';
+    const prRem=document.getElementById('prRemaining');
+    if(prRem)prRem.textContent=`${rem.toFixed(1)} ${u} remaining`;
+  }
 }
 
 function update(){
@@ -474,17 +639,18 @@ function update(){
     err.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v4M12 16h0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> ${O>=M?'Optimistic must be less than Most likely':'Most likely must be less than Pessimistic'}`;
     err.style.display='flex';return;
   }
-  err.style.display='none';syncBounds();applyUnit();updateStats();updateDateBar();updateProgress();buildCharts();buildCalChart();
+  err.style.display='none';syncBounds();applyUnit();updateStats();updateHeader();buildCharts();buildCalChart();
 }
 
 function wire(sId,nId,set){
   const sl=document.getElementById(sId),nm=document.getElementById(nId);
-  sl.addEventListener('input',()=>{set(parseFloat(sl.value));nm.value=sl.value;applyParams();
-update();});
+  sl.addEventListener('input',()=>{set(parseFloat(sl.value));nm.value=sl.value;update();});
   nm.addEventListener('input',()=>{const v=Math.max(0,parseFloat(nm.value)||0);set(v);if(v<=parseFloat(sl.max))sl.value=v;update();});
 }
 wire('oS','oN',v=>O=v);wire('mS','mN',v=>M=v);wire('pS','pN',v=>P=v);
 document.getElementById('unitIn').addEventListener('input',()=>{applyUnit();buildCharts();});
+document.getElementById('startIn').addEventListener('change',()=>{applyDateInputs();update();});
+document.getElementById('endIn').addEventListener('change',()=>{applyDateInputs();update();});
 
 const LOGO_S=`<svg fill="none" height="64" viewBox="0 0 32 32" width="64" xmlns="http://www.w3.org/2000/svg"><clipPath id="dd"><path d="m0 0h32v32h-32z"/></clipPath><g clip-path="url(#dd)"><path d="m15.9853 14.6616c-2.6801 0-4.8608 2.1808-4.8608 4.8608 0 1.3033.5169 2.4879 1.3549 3.3617h7.0111c.838-.8738 1.3549-2.0584 1.3549-3.3617 0-2.68-2.1807-4.8608-4.8607-4.8608z" fill="#fbfb4b"/><g fill="#0a2e2a"><path d="m16.5427 11.804h-1.1161l-.2357-3.804h1.5875z"/><path d="m21.3736 13.9685-.8555-.7174 2.2649-3.0654 1.2167 1.0204z"/><path d="m23.6827 18.7315-.1939-1.0997 3.7052-.8925.2757 1.5639z"/><path d="m11.4519 13.2511-.8556.7174-2.62609-2.7624 1.21671-1.0204z"/><path d="m8.48094 17.6318-.1939 1.0997-3.78704-.4283.2757-1.5639z"/><path d="m25.012 24.0001-1.1119-2.4237h-2.3025c.2351-.6411.3635-1.3331.3635-2.0547 0-3.2957-2.6812-5.9769-5.9769-5.9769-3.2956 0-5.9768 2.6812-5.9768 5.9769 0 .7216.1284 1.4136.3635 2.0547h-2.30248l-1.11188 2.4237zm-9.0271-9.2434c2.6279 0 4.765 2.1377 4.765 4.765 0 1.2633-.4951 2.4128-1.3004 3.2665h-6.9299c-.8053-.8537-1.3004-2.0032-1.3004-3.2665 0-2.6273 2.1378-4.765 4.765-4.765z"/></g></g></svg>`;
 const lImg=new Image();lImg.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(LOGO_S);
@@ -494,35 +660,57 @@ function rrect(cx,x,y,w,h,r){cx.beginPath();cx.moveTo(x+r,y);cx.lineTo(x+w-r,y);
 document.getElementById('dlBtn').addEventListener('click',()=>{
   if(O>=M||M>=P)return;
   const s=cp(),task=document.getElementById('taskIn').value.trim(),unit=getUnit()||'units';
-  const W=1280,H=820,M_=36;
+  const W=1280,M_=36;
+  const hasCalExp=!!(startDate&&endDate&&calCh);
+  const CALH_=260;
+  const H=hasCalExp?1100:820;
   const dc=document.createElement('canvas');dc.width=W;dc.height=H;
   const cx=dc.getContext('2d');
 
-  // Background gradient
   const bg=cx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#4ee5d3');bg.addColorStop(1,'#caf1ed');
   cx.fillStyle=bg;cx.fillRect(0,0,W,H);
 
   const FONT='Inter,-apple-system,system-ui,sans-serif';
 
-  // Header card
+  const fmtD=d=>d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
   let y=M_;
-  cx.fillStyle='rgba(255,255,255,0.95)';rrect(cx,M_,y,W-2*M_,82,16);cx.fill();
+  const hdH=startDate?100:82;
+  cx.fillStyle='rgba(255,255,255,0.95)';rrect(cx,M_,y,W-2*M_,hdH,16);cx.fill();
   cx.strokeStyle='rgba(10,46,42,0.08)';cx.lineWidth=1;cx.stroke();
   cx.drawImage(lImg,M_+22,y+19,44,44);
   cx.fillStyle='#0a2e2a';cx.font=`700 22px ${FONT}`;cx.textAlign='left';cx.fillText('Sunsave',M_+78,y+38);
   cx.fillStyle='rgba(10,46,42,0.55)';cx.font=`700 11px ${FONT}`;cx.fillText('PERT ESTIMATOR',M_+78,y+58);
   if(task){cx.fillStyle='#0a2e2a';cx.font=`600 17px ${FONT}`;cx.textAlign='center';cx.fillText(task,W/2,y+44);}
-  cx.fillStyle='rgba(10,46,42,0.45)';cx.font=`500 12.5px ${FONT}`;cx.textAlign='right';
-  const fmtD=d=>d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  cx.fillStyle='rgba(10,46,42,0.45)';cx.font=`500 12px ${FONT}`;cx.textAlign='right';
   if(startDate){
-    cx.fillText(fmtD(startDate)+(endDate?' → '+fmtD(endDate):''),W-M_-22,y+38);
+    cx.fillText('📅 '+fmtD(startDate)+(endDate?' → '+fmtD(endDate):''),W-M_-22,y+36);
+    const el=getElapsed();
+    if(el!==null&&el>=0&&endDate){
+      const tot=(endDate.getTime()-startDate.getTime())/864e5;
+      cx.fillText(`Day ${Math.round(el)} of ${Math.round(tot)} · ${Math.max(0,tot-el).toFixed(1)} calendar days remaining`,W-M_-22,y+54);
+    }
+    if(completed!==null){
+      const pct=Math.min(100,completed/s.mu*100);
+      cx.fillStyle='rgba(10,46,42,0.6)';cx.font=`600 11.5px ${FONT}`;
+      cx.fillText(`${completed.toFixed(1)} / ${s.mu.toFixed(1)} ${unit} done · ${pct.toFixed(0)}%`,W-M_-22,y+72);
+      const bx=M_+22,bw=W-2*M_-44,bh=6;const by=y+82;
+      cx.fillStyle='rgba(10,46,42,0.08)';rrect(cx,bx,by,bw,bh,3);cx.fill();
+      cx.fillStyle='#10b981';rrect(cx,bx,by,Math.max(0,bw*pct/100),bh,3);cx.fill();
+    }
   }else{
     cx.fillText(new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}),W-M_-22,y+38);
+    cx.fillText('Estimates in '+unit,W-M_-22,y+58);
   }
-  cx.fillText('Estimates in '+unit,W-M_-22,y+58);
 
-  // Input cards
-  y+=98;
+  y+=hdH+16;
+  if(hasCalExp){
+    cx.fillStyle='rgba(255,255,255,0.95)';rrect(cx,M_,y,W-2*M_,CALH_+48,16);cx.fill();
+    cx.strokeStyle='rgba(10,46,42,0.08)';cx.lineWidth=1;cx.stroke();
+    cx.fillStyle='rgba(10,46,42,0.55)';cx.font=`700 11px ${FONT}`;cx.textAlign='left';
+    cx.fillText('TIMELINE · PROBABILITY OF COMPLETION BY DATE',M_+20,y+22);
+    cx.drawImage(calCh.canvas,M_+10,y+32,W-2*M_-20,CALH_);
+    y+=CALH_+48+14;
+  }
   const IH=120,IW=(W-2*M_-2*14)/3;
   const inputs=[{l:'OPTIMISTIC',v:O,c:COL_O,h:'Best-case scenario'},{l:'MOST LIKELY',v:M,c:COL_M,h:'Realistic estimate'},{l:'PESSIMISTIC',v:P,c:COL_P,h:'Worst case'}];
   inputs.forEach((it,i)=>{
@@ -534,15 +722,12 @@ document.getElementById('dlBtn').addEventListener('click',()=>{
     cx.beginPath();cx.arc(x+22,y+30,4,0,2*Math.PI);cx.fill();
     cx.fillText(it.l,x+32,y+34);
     cx.fillStyle='#0a2e2a';cx.font=`700 44px ${FONT}`;cx.fillText(it.v.toFixed(1),x+22,y+82);
-    cx.fillStyle='rgba(10,46,42,0.4)';cx.font=`500 13px ${FONT}`;
-    const numW=cx.measureText(it.v.toFixed(1)).width;
     cx.font=`700 44px ${FONT}`;
     const realW=cx.measureText(it.v.toFixed(1)).width;
-    cx.font=`500 13px ${FONT}`;cx.fillText(unit,x+30+realW,y+82);
+    cx.fillStyle='rgba(10,46,42,0.4)';cx.font=`500 13px ${FONT}`;cx.fillText(unit,x+30+realW,y+82);
     cx.fillStyle='rgba(10,46,42,0.55)';cx.font=`500 12px ${FONT}`;cx.fillText(it.h,x+22,y+IH-16);
   });
 
-  // Charts
   y+=IH+14;
   const CH=288,CW_=(W-2*M_-14)/2;
   const drawChartCard=(x,title,canv)=>{
@@ -553,7 +738,6 @@ document.getElementById('dlBtn').addEventListener('click',()=>{
   };
   drawChartCard(M_,'PROBABILITY DENSITY',pCh);
   drawChartCard(M_+CW_+14,'CUMULATIVE DISTRIBUTION',cCh);
-  // Legends on chart cards
   cx.font=`700 10px ${FONT}`;cx.textAlign='left';
   let lx=M_+CW_-160;
   [['#15803d','O'],['#b45309','M'],['#b91c1c','P'],['#1e40af','μ']].forEach(([c,l])=>{
@@ -571,14 +755,12 @@ document.getElementById('dlBtn').addEventListener('click',()=>{
   });
   if(startDate&&elExp!==null&&elExp>0){cx.fillStyle=COL_TODAY;cx.fillText('Now',lx2,y+25);}
 
-  // Stats card
   y+=CH+14;
   const SH=128;
   cx.fillStyle='rgba(255,255,255,0.95)';rrect(cx,M_,y,W-2*M_,SH,16);cx.fill();
   cx.strokeStyle='rgba(10,46,42,0.08)';cx.lineWidth=1;cx.stroke();
   cx.fillStyle='rgba(10,46,42,0.55)';cx.font=`700 11px ${FONT}`;cx.textAlign='left';cx.fillText('STATISTICS · IN '+unit.toUpperCase(),M_+22,y+24);
   cx.fillStyle='rgba(10,46,42,0.4)';cx.font=`500 11px monospace`;cx.textAlign='right';cx.fillText('μ = (O + 4M + P) / 6   ·   σ = (P − O) / 6',W-M_-22,y+24);
-
   const stats=[
     {l:'μ EXPECTED',v:s.mu,bg:'rgba(30,64,175,0.08)',fg:COL_MU},
     {l:'σ STD DEV',v:s.sg,bg:'rgba(10,46,42,0.035)',fg:'#0a2e2a'},
@@ -599,7 +781,6 @@ document.getElementById('dlBtn').addEventListener('click',()=>{
     cx.fillStyle=st.fg;cx.font=`700 24px ${FONT}`;cx.fillText(st.v.toFixed(1),x+each/2,y+95);
   });
 
-  // Footer
   y+=SH+18;
   cx.fillStyle='rgba(10,46,42,0.45)';cx.font=`500 11.5px ${FONT}`;cx.textAlign='center';
   cx.fillText('Generated with Sunsave PERT Estimator  ·  Normal approximation of the PERT Beta distribution',W/2,y+8);
