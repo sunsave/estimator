@@ -228,13 +228,12 @@ function readParams(){
   return null;
 }
 
-const fmtDateInput=d=>d.toISOString().split('T')[0];
+const parseLocalDate=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s||'');if(!m)return null;const d=new Date(+m[1],+m[2]-1,+m[3]);return isNaN(d.getTime())?null:d;};
+const fmtDateInput=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 
 function applyDateInputs(){
-  const sv=document.getElementById('startIn')?.value;
-  const ev=document.getElementById('endIn')?.value;
-  if(sv){const d=new Date(sv);if(!isNaN(d.getTime())){d.setHours(0,0,0,0);startDate=d;}}else{startDate=null;}
-  if(ev){const d=new Date(ev);if(!isNaN(d.getTime())){d.setHours(0,0,0,0);endDate=d;}}else{endDate=null;}
+  startDate=parseLocalDate(document.getElementById('startIn')?.value);
+  endDate=parseLocalDate(document.getElementById('endIn')?.value);
 }
 
 function applyParams(){
@@ -248,8 +247,8 @@ function applyParams(){
   ['pN','pS'].forEach(id=>document.getElementById(id).value=P);
   if(q.has('unit'))document.getElementById('unitIn').value=q.get('unit');
   if(q.has('task'))document.getElementById('taskIn').value=q.get('task');
-  if(q.has('start')){const d=new Date(q.get('start'));if(!isNaN(d.getTime())){d.setHours(0,0,0,0);startDate=d;}}
-  if(q.has('end')){const d=new Date(q.get('end'));if(!isNaN(d.getTime())){d.setHours(0,0,0,0);endDate=d;}}
+  if(q.has('start')){const d=parseLocalDate(q.get('start'));if(d)startDate=d;}
+  if(q.has('end')){const d=parseLocalDate(q.get('end'));if(d)endDate=d;}
   if(q.has('completed')){const v=parseFloat(q.get('completed'));if(!isNaN(v)&&v>=0)completed=v;}
   const si=document.getElementById('startIn');
   const ei=document.getElementById('endIn');
