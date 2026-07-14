@@ -100,7 +100,7 @@ sl-card{width:100%}
       <div slot="summary" class="summary-row">
         <strong class="section-label">Timeline</strong>
         <span id="tlInfo"></span>
-        <sl-tooltip id="statusTip" style="display:none" content="On track: ahead of P50 · Watch: between P50 and P80 · At risk: past P80. Assumes 1 calendar day ≈ 1 eng-pair-day.">
+        <sl-tooltip id="statusTip" style="display:none" content="On track: ahead of P50 · Watch: between P50 and P80 · At risk: past P80.">
           <sl-badge id="statusPill" pill></sl-badge>
         </sl-tooltip>
       </div>
@@ -172,7 +172,13 @@ sl-card{width:100%}
 
   <sl-drawer id="editDrawer" label="Edit estimate" placement="end">
     <div class="drawer-body">
-      <sl-input id="unitIn" label="Unit" value="eng-pair-days" placeholder="eng-pair-days"></sl-input>
+      <sl-input id="unitIn" label="Unit" value="eng-days" placeholder="eng-days"></sl-input>
+      <div class="estimate-input">
+        <sl-input id="cN" type="number" label="Concurrency" help-text="Average engineers working in parallel. 1 = fully sequential. Divides effort to project calendar dates." value="1" step="0.5" min="1" no-spin-buttons>
+          <span slot="suffix">×</span>
+        </sl-input>
+        <sl-range id="cS" min="1" max="8" step="0.5" value="1"></sl-range>
+      </div>
       <sl-input id="startIn" type="date" label="Start date"></sl-input>
       <sl-input id="endIn" type="date" label="End date"></sl-input>
       <p>Three-point estimation gives you a probabilistic view of how long work will take. Provide your <b>optimistic</b>, <b>most likely</b>, and <b>pessimistic</b> estimates — the charts visualise the range of likely outcomes and the percentiles tell you what to commit to with confidence.</p>
@@ -218,12 +224,12 @@ function qnorm(p){
   const q=Math.sqrt(-2*Math.log(1-p));return-(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
 }
 
-let O=3,M=7,P=14;
+let O=3,M=7,P=14,C=1;
 let startDate=null,endDate=null,completed=null;
 
 function readParams(){
   const q=new URLSearchParams(window.location.search);
-  if(q.has('o')||q.has('m')||q.has('p')||q.has('task')||q.has('unit')||q.has('start')||q.has('end')||q.has('completed'))return q;
+  if(q.has('o')||q.has('m')||q.has('p')||q.has('c')||q.has('task')||q.has('unit')||q.has('start')||q.has('end')||q.has('completed'))return q;
   return null;
 }
 
@@ -236,14 +242,15 @@ function applyDateInputs(){
 }
 
 function applyParams(){
-  startDate=null;endDate=null;completed=null;
+  startDate=null;endDate=null;completed=null;C=1;
   const q=readParams();
   if(!q){applyDateInputs();return;}
   const num=(k,cur)=>{const v=parseFloat(q.get(k));return(q.has(k)&&!isNaN(v)&&v>=0)?v:cur;};
-  O=num('o',O);M=num('m',M);P=num('p',P);
+  O=num('o',O);M=num('m',M);P=num('p',P);C=Math.max(1,num('c',C));
   ['oN','oS'].forEach(id=>document.getElementById(id).value=O);
   ['mN','mS'].forEach(id=>document.getElementById(id).value=M);
   ['pN','pS'].forEach(id=>document.getElementById(id).value=P);
+  ['cN','cS'].forEach(id=>document.getElementById(id).value=C);
   if(q.has('unit'))document.getElementById('unitIn').value=q.get('unit');
   if(q.has('task'))document.getElementById('taskIn').value=q.get('task');
   if(q.has('start')){const d=parseLocalDate(q.get('start'));if(d)startDate=d;}
@@ -278,8 +285,8 @@ function getStatus(){
   const el=getElapsed();
   if(el===null||el<=0)return null;
   const s=cp();
-  if(el<=s.p50)return 'on-track';
-  if(el<=s.p80)return 'watch';
+  if(el<=effortToCalendar(s.p50))return 'on-track';
+  if(el<=effortToCalendar(s.p80))return 'watch';
   return 'at-risk';
 }
 
@@ -315,7 +322,7 @@ function calPlugin(){return{id:'calP',afterDatasetsDraw(ch){
   const toDate=v=>{const d=new Date(startDate.getTime()+v*864e5);return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});};
   const totalDays=(endDate.getTime()-startDate.getTime())/864e5;
   [{p:.5,xv:s.p50,c:'rgba(10,46,42,0.42)',l:'P50'},{p:.8,xv:s.p80,c:COL_M,l:'P80'},{p:.9,xv:s.p90,c:COL_P,l:'P90'},{p:.95,xv:s.p95,c:COL_P95,l:'P95'}].forEach(({p,xv,c,l})=>{
-    const px=sc.x.getPixelForValue(xv),py=sc.y.getPixelForValue(p);
+    const px=sc.x.getPixelForValue(effortToCalendar(xv)),py=sc.y.getPixelForValue(p);
     if(px<ca.left||px>ca.right)return;
     ctx.save();ctx.strokeStyle=c;ctx.lineWidth=1.3;ctx.setLineDash([4,4]);
     ctx.beginPath();ctx.moveTo(ca.left,py);ctx.lineTo(px,py);ctx.stroke();
@@ -335,7 +342,7 @@ function calPlugin(){return{id:'calP',afterDatasetsDraw(ch){
   if(el!==null&&el>0){
     const px=sc.x.getPixelForValue(el);
     if(px>=ca.left&&px<=ca.right){
-      const prob=ncdf(el,s.mu,s.sg);
+      const prob=ncdf(el*C,s.mu,s.sg);
       const py=sc.y.getPixelForValue(prob);
       ctx.save();ctx.strokeStyle=COL_TODAY;ctx.lineWidth=2;
       ctx.beginPath();ctx.moveTo(px,ca.top);ctx.lineTo(px,ca.bottom);ctx.stroke();
@@ -388,9 +395,9 @@ function buildCalChart(){
   wrap.style.display='';
   const s=cp(),{mu,sg}=s;
   const totalDays=(endDate.getTime()-startDate.getTime())/864e5;
-  const xMax=Math.max(totalDays*1.08,mu+3*sg);
+  const xMax=Math.max(totalDays*1.08,(mu+3*sg)/C);
   const N=280,pts=[];
-  for(let i=0;i<=N;i++){const x=xMax*i/N;pts.push({x,y:ncdf(x,mu,sg)});}
+  for(let i=0;i<=N;i++){const x=xMax*i/N;pts.push({x,y:ncdf(x*C,mu,sg)});}
   const toDateFull=v=>{const d=new Date(startDate.getTime()+v*864e5);return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'long'});};
   const toDateShort=v=>{const d=new Date(startDate.getTime()+v*864e5);return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});};
   const scX={type:'linear',min:0,max:xMax,grid:{color:GRID,drawTicks:false},border:{display:false},
@@ -430,6 +437,8 @@ const getElapsed=()=>{
   return(t.getTime()-startDate.getTime())/864e5;
 };
 
+const effortToCalendar=v=>v/C;
+
 function updateHeader(){
   const el=getElapsed();
   const s=cp();
@@ -445,6 +454,7 @@ function updateHeader(){
     let info=dateStr;
     if(el!==null&&el<0)info+=`  ·  Starts in ${Math.abs(el).toFixed(0)} days`;
     else if(d!==null)info+=`  ·  Day ${d}${tot?' of '+Math.round(tot):''}`;
+    if(C>1)info+=`  ·  ${C}× concurrency`;
     document.getElementById('tlInfo').textContent=info;
 
     const tlBar=document.getElementById('tlBar');
@@ -463,7 +473,11 @@ function updateHeader(){
       const variants={'on-track':'success','watch':'warning','at-risk':'danger'};
       const colors={'on-track':'#15803d','watch':'#b45309','at-risk':'#b91c1c'};
       if(pill){pill.textContent=labels[status];pill.variant=variants[status];}
-      if(tip)tip.style.display='';
+      if(tip){
+        const base='On track: ahead of P50 · Watch: between P50 and P80 · At risk: past P80.';
+        tip.content=C>1?`${base} Calendar dates = effort ÷ ${C} (concurrency).`:base;
+        tip.style.display='';
+      }
       tlSection.style.setProperty('--sl-color-primary-600',colors[status]);
     }else{
       if(tip)tip.style.display='none';
@@ -473,7 +487,7 @@ function updateHeader(){
     // Timeline detail: P50/P80/P90/P95 as calendar dates
     const tlDetail=document.getElementById('tlDetail');
     if(tlDetail){
-      const fmtFull=v=>{const dd=new Date(startDate.getTime()+v*864e5);return dd.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});};
+      const fmtFull=v=>{const dd=new Date(startDate.getTime()+effortToCalendar(v)*864e5);return dd.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});};
       tlDetail.innerHTML=[['P50',s.p50,''],['P80',s.p80,'p80'],['P90',s.p90,'p90'],['P95',s.p95,'p95']]
         .map(([l,v,cls])=>`<div class="stat ${cls}"><small>${l}</small><span>${fmtFull(v)}</span></div>`)
         .join('');
@@ -648,6 +662,7 @@ async function init(){
       .map(t=>customElements.whenDefined(t))
   );
   wire('oS','oN',v=>O=v);wire('mS','mN',v=>M=v);wire('pS','pN',v=>P=v);
+  wire('cS','cN',v=>C=Math.max(1,v));
   document.getElementById('unitIn').addEventListener('sl-input',()=>{applyUnit();buildCharts();});
   document.getElementById('startIn').addEventListener('sl-change',()=>{applyDateInputs();update();});
   document.getElementById('endIn').addEventListener('sl-change',()=>{applyDateInputs();update();});
